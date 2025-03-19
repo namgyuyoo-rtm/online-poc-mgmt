@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>RTM AI POC 최종 제출 완료 안내</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px;">
+    <table align="center" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <!-- 헤더 -->
+        <tr>
+            <td align="center" style="padding-bottom: 20px;">
+                <img src="data:image/svg+xml;base64,{{ 로고 }}" alt="RTM AI" style="max-height: 50px;">
+            </td>
+        </tr>
+
+        <!-- 제목 -->
+        <tr>
+            <td align="center">
+                <h2 style="color: #ec6707;">✅ POC 최종 제출 완료</h2>
+                <p style="color: #555;">POC가 최종 제출되었습니다. AI 모델 분석이 진행 중입니다.</p>
+                <p style="color: #555;">5일 이내에 결과 보고서를 제공해 드리겠습니다.</p>
+            </td>
+        </tr>
+
+        <!-- 관리페이지 링크 -->
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <a href="{{ 프로젝트관리페이지 }}" target="_blank" style="background-color: #ec6707; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">
+                    프로젝트 관리 페이지 바로가기 🔗
+                </a>
+            </td>
+        </tr>
+
+        <!-- 신청정보 -->
+        <tr>
+            <td>
+                <table width="100%" cellpadding="10" style="background-color: #f1f1f1; border-radius: 5px; word-break: break-all;">
+                    <tr>
+                        <td>
+                            <h3 style="margin: 0;">📌 신청 정보</h3>
+                            <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                                <li><strong>접수 시각:</strong> {{ 접수시각 }}</li>
+                                <li><strong>신청자명:</strong> {{ name }}</li>
+                                <li><strong>회사명:</strong> {{ company }}</li>
+                                <li><strong>이메일:</strong> <a href="mailto:{{ email }}">{{ email }}</a></li>
+                                <li><strong>연락처:</strong> {{ phone }}</li>
+                                <li><strong>유형:</strong> {{ project_type }}</li>
+                                <li><strong>프로젝트 ID:</strong> {{ project_id }}</li>
+                                <li><strong>과제 설명:</strong> {{ purpose }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- 진행 단계 안내 -->
+        <tr>
+            <td style="padding-top: 20px;">
+                <h3 style="color: #212529; margin-bottom: 15px;">🚀 AI 분석 진행 단계</h3>
+                <div style="background-color: #ffffff; border: 1px solid #e9ecef; border-radius: 12px; padding: 15px; margin-top: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <ol style="color: #555; padding-left: 15px;">
+                        <li><strong>데이터 검토 및 전처리</strong> – 업로드된 데이터를 분석하고 정리합니다.</li>
+                        <li><strong>AI 모델 학습 및 검증</strong> – 업로드된 데이터로 AI를 학습시킵니다.</li>
+                        <li><strong>검사 성능 분석 및 리포트 작성</strong> – 결과 분석 후 리포트를 작성합니다.</li>
+                        <li><strong>결과 보고서 제공 (5일 이내)</strong> – 최종 보고서를 이메일로 발송합니다.</li>
+                    </ol>
+                </div>
+            </td>
+        </tr>
+
+        <!-- 일정 변경 및 취소 안내 -->
+        <tr>
+            <td style="padding-top: 20px;">
+                <h3>📢 일정 변경 및 취소 안내</h3>
+                <p style="color: #555;">⚠️ <strong>진행 상황에 따라 일정이 변경되거나 지연될 수 있으며, 해당 경우 이메일로 재안내 드립니다.</strong></p>
+                <p style="color: #555;">📌 <strong>사유에 따라 분석이 취소될 수 있으며, 취소될 경우 이메일로 별도 안내해 드립니다.</strong></p>
+                <p style="color: #555;">❌ <strong>취소를 원하시는 경우, 아래 이메일로 요청해 주세요.</strong></p>
+                <p style="color: #ec6707; font-weight: bold;">📩 <a href="mailto:onlinepoc@rtm.ai">onlinepoc@rtm.ai</a></p>
+            </td>
+        </tr>
+
+        <!-- 데이터 보안 안내 -->
+        <tr>
+            <td style="padding-top: 20px;">
+                <h3>🔒 데이터 보안 안내</h3>
+                <p style="color: #555;">RTM AI는 고객님의 데이터를 철저히 보호하며, 요청한 POC 외의 용도로 절대 사용하지 않습니다.</p>
+                <p style="color: #555;">7년간의 제조 AI 전문 노하우로 안전하게 관리하고 있으니 안심하셔도 좋습니다.</p>
+            </td>
+        </tr>
+
+        <!-- 문의처 -->
+        <tr>
+            <td style="padding-top: 20px;">
+                <h3>📞 문의사항</h3>
+                <p style="color: #555;">추가 문의 사항이 있으시면 아래 연락처로 문의해 주세요.</p>
+                <p>
+                    📩 이메일: <a href="mailto:onlinepoc@rtm.ai">onlinepoc@rtm.ai</a><br>
+                    📞 전화: <a href="tel:0220886780">02-2088-67808</a><br>
+                    🏠 홈페이지: <a href="http://rtm.ai?utm_source=email&utm_medium=email&utm_campaign=250319_email_onlicepoc_welcome">www.rtm.ai</a>
+                </p>
+            </td>
+        </tr>
+
+        <!-- 마무리 -->
+        <tr>
+            <td align="center" style="padding-top: 30px; border-top: 1px solid #e9ecef;">
+                <p style="color: #555; font-size: 13px; line-height: 1.6; margin-bottom: 20px; word-break: keep-all;">
+                    RTM AI는 대한민국 대표 제조 AI 전문기업으로서<br>
+                    귀사의 디지털 혁신 파트너가 되어 드리겠습니다.
+                </p>
+                <img src="data:image/svg+xml;base64,{{ 로고 }}" 
+                     alt="RTM AI" 
+                     style="height: 30px; margin: 15px 0; padding: 10px 20px; border-radius: 6px;">
+                <div style="color: #888; font-size: 13px; margin-top: 15px;">
+                    <p style="margin: 0;">본 이메일은 발신전용입니다.</p>
+                    <p style="margin: 5px 0;">
+                        <strong style="color: #666;">RTM AI</strong> | 서울시 강남구 역삼로3길 11, 광성빌딩 본관 10층
+                    </p>
+                    <p style="margin: 0;">Copyright © 2025 RTM AI. All rights reserved.</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html> 

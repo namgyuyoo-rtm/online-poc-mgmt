@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}RTM AI POC 신청 완료 메일{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- 왼쪽: 폼 -->
+        <div class="col-md-6">
+            <div class="form-container">
+                <h1 class="mb-4">POC 최종 제출 완료 발송</h1>
+                
+                <div class="mb-4">
+                    <h5>프로젝트 정보</h5>
+                    <div class="card">
+                        <div class="card-body">
+                            <p><strong>프로젝트 ID:</strong> {{ project.id }}</p>
+                            <p><strong>상태:</strong> {{ project.status.value }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" id="emailForm">
+                    {{ form.csrf_token }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.company.label(class="form-label") }}
+                            {{ form.company(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <!-- 다른 필드들도 동일한 방식으로 구성 -->
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" onclick="sendEmail()">
+                            이메일 발송
+                        </button>
+                        <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="btn btn-secondary">
+                            돌아가기
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 미리보기 -->
+        <div class="col-md-6">
+            <div class="preview-container">
+                <h3 class="mb-3">이메일 미리보기</h3>
+                <iframe id="previewFrame" class="preview-frame"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updatePreview() {
+    const formData = {
+        name: document.getElementById('name').value,
+        company: document.getElementById('company').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        project_type: document.getElementById('project_type').value,
+        project_id: '{{ project.id }}',
+        purpose: document.getElementById('purpose').value || '',
+        project_url: document.getElementById('project_url').value || ''
+    };
+
+    fetch('/preview/{{ email_type.value }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.text())
+    .then(html => {
+        const previewFrame = document.getElementById('previewFrame');
+        const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+    });
+}
+
+function sendEmail() {
+    const formData = {
+        // 폼 데이터 수집
+        name: document.getElementById('name').value,
+        company: document.getElementById('company').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        project_type: document.getElementById('project_type').value,
+        project_id: '{{ project.id }}',
+        purpose: document.getElementById('purpose').value || '',
+        project_url: document.getElementById('project_url').value || ''
+    };
+
+    fetch('/project/{{ project.id }}/send-mail/{{ email_type.value }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('이메일이 성공적으로 전송되었습니다.');
+            window.location.href = '/project/{{ project.id }}';
+        } else {
+            alert('이메일 전송 실패: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('이메일 전송 중 오류가 발생했습니다.');
+    });
+}
+
+// 폼 필드 변경 감지
+document.getElementById('emailForm').addEventListener('input', updatePreview);
+
+// 초기 미리보기 업데이트
+updatePreview();
+</script>
+{% endblock %} 

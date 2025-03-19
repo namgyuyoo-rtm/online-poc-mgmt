@@ -1,0 +1,22 @@
+<!-- 기간 연장 모달 -->
+<div class="modal fade" id="extendModal" tabindex="-1" aria-labelledby="extendModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="extendModalLabel">기간 연장</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newDate" class="form-label">새로운 완료 예정일</label>
+                    <input type="date" class="form-control" id="newDate" min="{{ today }}" required>
+                    <div class="form-text">현재 날짜 이후로 선택해주세요.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" onclick="extendProject()">연장 확인</button>
+            </div>
+        </div>
+    </div>
+</div> 

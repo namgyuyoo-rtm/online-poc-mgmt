@@ -23,8 +23,8 @@ import logging
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-please-change')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///poc.db')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
@@ -333,7 +333,7 @@ async def complete_application():
         success, error = await send_status_email(
             project,
             'online-poc-email-complete',
-            'RTM AI POC 신청 완료 안내'
+            'RTM AI POC 접수 완료 안내'
         )
         
         if success:

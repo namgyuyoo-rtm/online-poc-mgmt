@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}RTM AI POC 신청 완료{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- 왼쪽: 폼 -->
+        <div class="col-md-6">
+            <div class="form-container">
+                <h1 class="mb-4">POC 최종 제출 완료 발송</h1>
+                
+                <div class="mb-4">
+                    <h5>텍스트 붙여넣기 영역</h5>
+                    <div id="pasteArea" contenteditable="true" class="form-control">여기에 텍스트를 붙여넣으세요</div>
+                </div>
+
+                <form method="POST" id="pocForm">
+                    {{ form.csrf_token }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.company.label(class="form-label") }}
+                            {{ form.company(class="form-control") }}
+                            {% if form.company.errors %}
+                                <div class="text-danger">{{ form.company.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control") }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger">{{ form.phone.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.project_type.label(class="form-label") }}
+                            {{ form.project_type(class="form-control") }}
+                            {% if form.project_type.errors %}
+                                <div class="text-danger">{{ form.project_type.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.project_id.label(class="form-label") }}
+                            {{ form.project_id(class="form-control") }}
+                            {% if form.project_id.errors %}
+                                <div class="text-danger">{{ form.project_id.errors[0] }}</div>
+                            {% endif %}
+                            <div id="projectIdValidation"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.project_url.label(class="form-label") }}
+                        {{ form.project_url(class="form-control") }}
+                        {% if form.project_url.errors %}
+                            <div class="text-danger">{{ form.project_url.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.purpose.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.purpose(class="form-control", rows=3, placeholder="선택사항입니다") }}
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearPurpose()">초기화</button>
+                        </div>
+                        <small class="text-muted">과제 목적은 선택사항입니다</small>
+                        {% if form.purpose.errors %}
+                            <div class="text-danger">{{ form.purpose.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 미리보기 -->
+        <div class="col-md-6">
+            <div class="preview-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">이메일 미리보기</h3>
+                    <button class="btn btn-primary" onclick="sendEmail()">
+                        <i class="bi bi-envelope"></i> 이메일 발송
+                    </button>
+                </div>
+                <iframe id="previewFrame" class="preview-frame" src="{{ preview_url if preview_url else 'about:blank' }}"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .container-fluid {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    .form-container, .preview-container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+    .preview-container {
+        position: sticky;
+        top: 20px;
+    }
+    .preview-frame {
+        width: 100%;
+        height: 800px;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+    }
+    #pasteArea {
+        width: 100%;
+        height: 200px;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        resize: vertical;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 폼 데이터가 변경될 때마다 미리보기 업데이트
+    function updatePreview() {
+        const formData = {
+            '이름': document.getElementById('name').value,
+            '회사명': document.getElementById('company').value,
+            '이메일': document.getElementById('email').value,
+            '연락처': document.getElementById('phone').value,
+            '유형': document.getElementById('project_type').value,
+            '프로젝트ID': document.getElementById('project_id').value,
+            '프로젝트관리페이지': document.getElementById('project_url').value,
+            '과제목적': document.getElementById('purpose').value,
+            '접수시각': new Date().toISOString()
+        };
+
+        fetch('/preview/submission-complete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.text())
+        .then(html => {
+            const previewFrame = document.getElementById('previewFrame');
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+        });
+    }
+
+    // 폼 필드 변경 감지
+    document.getElementById('pocForm').addEventListener('input', updatePreview);
+
+    function clearPurpose() {
+        document.getElementById('purpose').value = '';
+        updatePreview();
+    }
+
+    // 붙여넣기 영역 변경 감지
+    document.getElementById('pasteArea').addEventListener('input', function(e) {
+        const text = this.innerText;
+        console.log('=== 텍스트 파싱 시작 ===');
+        console.log('텍스트:', text);
+        
+        // Extract values using regex
+        const extractValue = (text, field) => {
+            const regex = new RegExp(`${field}[\\s\\n]*(:|\\s)\\s*([^\\n]+)`, 'i');
+            const match = text.match(regex);
+            return match ? match[2].trim() : '';
+        };
+
+        // Fill form fields
+        document.getElementById('name').value = extractValue(text, '이름');
+        document.getElementById('company').value = extractValue(text, '회사명');
+        document.getElementById('email').value = extractValue(text, '이메일');
+        document.getElementById('phone').value = extractValue(text, '연락처');
+        document.getElementById('project_type').value = extractValue(text, '유형');
+        
+        // Special handling for project_id to support different formats
+        const projectIdRegex = /([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})/;
+        const projectIdMatch = text.match(projectIdRegex);
+        const validationDiv = document.getElementById('projectIdValidation');
+        
+        if (projectIdMatch && projectIdMatch[1]) {
+            // Found a UUID pattern
+            document.getElementById('project_id').value = projectIdMatch[1].trim();
+            console.log('=== 발견된 정보 ===');
+            console.log('프로젝트 ID:', projectIdMatch[1].trim());
+            validationDiv.innerHTML = '<div class="text-success mt-1"><i class="bi bi-check-circle"></i> 프로젝트 ID가 감지되었습니다.</div>';
+        } else {
+            // Try looking for any ID format with prefix
+            const fullIdRegex = /프로젝트\s*ID:?\s*([^\s]+)/i;
+            const fullIdMatch = text.match(fullIdRegex);
+            
+            if (fullIdMatch && fullIdMatch[1]) {
+                document.getElementById('project_id').value = fullIdMatch[1].trim();
+                console.log('=== 프로젝트 ID 텍스트로 발견됨 ===');
+                console.log('프로젝트 ID:', fullIdMatch[1].trim());
+                validationDiv.innerHTML = '<div class="text-success mt-1"><i class="bi bi-check-circle"></i> 프로젝트 ID가 감지되었습니다.</div>';
+            } else {
+                console.log('=== 프로젝트 ID를 찾을 수 없음 ===');
+                validationDiv.innerHTML = '<div class="text-danger mt-1"><i class="bi bi-exclamation-triangle"></i> 프로젝트 ID를 찾을 수 없습니다.</div>';
+                console.log('=== 검증 실패: 프로젝트 ID 누락 ===');
+            }
+        }
+        
+        document.getElementById('project_url').value = extractValue(text, '프로젝트(관리페이지|URL)');
+        
+        let purpose = extractValue(text, '과제목적');
+        if (purpose === '(비활성화)' || !purpose) purpose = '';
+        document.getElementById('purpose').value = purpose;
+
+        // 미리보기 업데이트
+        updatePreview();
+    });
+
+    function sendEmail() {
+        // 폼 데이터 수집
+        const formData = {
+            name: document.getElementById('name').value,
+            company: document.getElementById('company').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            project_type: document.getElementById('project_type').value,
+            project_id: document.getElementById('project_id').value,
+            purpose: document.getElementById('purpose').value || '',
+            project_url: document.getElementById('project_url').value || ''
+        };
+
+        // 디버깅용 로그
+        console.log('Sending data:', formData);
+
+        // 필수 필드 검사
+        const requiredFields = ['name', 'company', 'email', 'phone', 'project_type', 'project_id'];
+        for (const field of requiredFields) {
+            if (!formData[field]) {
+                alert(`${field.replace('_', ' ')} 필드는 필수입니다.`);
+                document.getElementById(field).focus();
+                return;
+            }
+        }
+
+        fetch('/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('이메일이 성공적으로 전송되었습니다.');
+                window.location.href = '/projects';
+            } else {
+                alert('이메일 전송 실패: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('이메일 전송 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 초기 미리보기 업데이트
+    updatePreview();
+    
+    // 프로젝트 ID 필드에 직접 입력 시 검증 메시지 업데이트
+    document.getElementById('project_id').addEventListener('input', function() {
+        const validationDiv = document.getElementById('projectIdValidation');
+        const uuidPattern = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/;
+        
+        if (this.value.trim() === '') {
+            validationDiv.innerHTML = '';
+        } else if (uuidPattern.test(this.value.trim())) {
+            validationDiv.innerHTML = '<div class="text-success mt-1"><i class="bi bi-check-circle"></i> 유효한 프로젝트 ID 형식입니다.</div>';
+        } else if (this.value.trim().startsWith('MMM')) {
+            validationDiv.innerHTML = '<div class="text-success mt-1"><i class="bi bi-check-circle"></i> MMM 형식의 프로젝트 ID입니다.</div>';
+        } else {
+            validationDiv.innerHTML = '<div class="text-warning mt-1"><i class="bi bi-exclamation-triangle"></i> 일반적인 프로젝트 ID 형식이 아닙니다.</div>';
+        }
+    });
+</script>
+{% endblock %} 

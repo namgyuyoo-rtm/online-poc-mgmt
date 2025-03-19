@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>이메일 발송 이력</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>프로젝트 ID</th>
+                    <th>이메일 유형</th>
+                    <th>제목</th>
+                    <th>수신자</th>
+                    <th>상태</th>
+                    <th>발송 시각</th>
+                    <th>오류 메시지</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('main.project_detail', project_id=record.project_id) }}">
+                            {{ record.project_id }}
+                        </a>
+                    </td>
+                    <td>{{ record.email_type }}</td>
+                    <td>{{ record.subject }}</td>
+                    <td>{{ record.recipient }}</td>
+                    <td>
+                        {% if record.status == 'success' %}
+                        <span class="badge bg-success">성공</span>
+                        {% else %}
+                        <span class="badge bg-danger">실패</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ record.sent_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        {% if record.error_message %}
+                        <span class="text-danger">{{ record.error_message }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

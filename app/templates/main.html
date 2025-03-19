@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}RTM AI POC - 메인{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="jumbotron bg-white shadow-sm p-5 rounded">
+        <h1 class="display-4">RTM AI POC 시스템</h1>
+        <p class="lead">AI POC 프로젝트 관리 시스템에 오신 것을 환영합니다.</p>
+        <hr class="my-4">
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-envelope text-primary"></i> 
+                            POC 신청 완료 메일
+                        </h5>
+                        <p class="card-text">새로운 POC 프로젝트 신청을 위한 이메일을 발송합니다.</p>
+                        <a href="{{ url_for('main.application_complete') }}" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 신청 완료 메일 발송
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-check-circle text-success"></i> 
+                            POC 접수 완료 메일
+                        </h5>
+                        <p class="card-text">POC 프로젝트 접수 완료 이메일을 발송합니다.</p>
+                        <a href="{{ url_for('main.submission_complete') }}" class="btn btn-success">
+                            <i class="fas fa-paper-plane"></i> 접수 완료 메일 발송
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-tasks text-info"></i> 
+                            프로젝트 관리
+                        </h5>
+                        <p class="card-text">진행 중인 프로젝트의 상태를 확인하고 관리합니다.</p>
+                        <a href="{{ url_for('main.projects') }}" class="btn btn-info">
+                            <i class="fas fa-list"></i> 프로젝트 목록
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-history text-secondary"></i> 
+                            이메일 이력
+                        </h5>
+                        <p class="card-text">발송된 이메일 기록을 확인하고 관리합니다.</p>
+                        <a href="{{ url_for('main.email_history') }}" class="btn btn-secondary">
+                            <i class="fas fa-envelope-open-text"></i> 이력 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,22 @@
+<!-- 리포트 업로드 모달 -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">리포트 업로드</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="reportFile" class="form-label">리포트 파일</label>
+                    <input type="file" class="form-control" id="reportFile" accept=".pdf" required>
+                    <div class="form-text">PDF 파일만 업로드 가능합니다.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" onclick="uploadReport()">업로드 및 완료</button>
+            </div>
+        </div>
+    </div>
+</div> 

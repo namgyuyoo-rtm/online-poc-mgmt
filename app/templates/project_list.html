@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}RTM AI POC - 프로젝트 목록{% endblock %}
+
+{% block content %}
+<h2>프로젝트 목록</h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>이름</th>
+                <th>회사</th>
+                <th>프로젝트 유형</th>
+                <th>상태</th>
+                <th>생성일</th>
+                <th>작업</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.id }}</td>
+                <td>{{ project.name }}</td>
+                <td>{{ project.company }}</td>
+                <td>{{ project.project_type }}</td>
+                <td>{{ project.status.value }}</td>
+                <td>{{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    <a href="#" class="btn btn-sm btn-info">상세보기</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center">등록된 프로젝트가 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 
