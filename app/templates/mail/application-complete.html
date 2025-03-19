@@ -103,7 +103,7 @@ function sendEmail() {
         project_url: document.getElementById('project_url').value || ''
     };
 
-    fetch('/project/{{ project.id }}/send-mail/{{ email_type.value }}', {
+    fetch('/project/{{ project.id }}/send-email/{{ email_type.value }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

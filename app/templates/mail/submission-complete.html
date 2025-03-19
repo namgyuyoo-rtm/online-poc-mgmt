@@ -199,15 +199,24 @@ async function parsePastedData() {
     // 프로젝트 검증
     try {
         console.log('=== 프로젝트 검증 시작 ===');
+        
+        console.log('=== 프로젝트 ID 비교 ===');
+        console.log('발견된 ID:', projectId);
+        console.log('현재 페이지 ID:', '{{ project.id if project else "" }}');
+        
         const response = await fetch(`/project/${projectId}/validate-status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                project_id: projectId
+                // 상태 제약 조건 제거
             })
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const result = await response.json();
         console.log('=== 서버 응답 ===');
@@ -257,10 +266,9 @@ async function parsePastedData() {
         } else {
             console.log('=== 검증 실패 ===');
             console.log('에러 메시지:', result.message);
-            console.log('실패 유형:', result.type);
             const validationResult = document.getElementById('validationResult');
             validationResult.innerHTML = `
-                <div class="alert alert-danger" role="alert">
+                <div class="alert alert-warning" role="alert">
                     <i class="bi bi-exclamation-triangle-fill"></i> ${result.message}
                 </div>
             `;
@@ -272,7 +280,7 @@ async function parsePastedData() {
         const validationResult = document.getElementById('validationResult');
         validationResult.innerHTML = `
             <div class="alert alert-danger" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i> 프로젝트 검증 중 오류가 발생했습니다.
+                <i class="bi bi-exclamation-triangle-fill"></i> 프로젝트 검증 중 오류가 발생했습니다: ${error.message || '알 수 없는 오류'}
             </div>
         `;
         document.getElementById('sendEmailBtn').disabled = true;
@@ -299,7 +307,7 @@ function updatePreview() {
 
     console.log('미리보기 데이터:', formData);
 
-    fetch('/preview', {
+    fetch('/preview/submission-complete', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -346,34 +354,42 @@ function sendEmail() {
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
         project_type: document.getElementById('project_type').value,
-        project_id: '{{ project.id if project else "" }}',
+        project_id: document.getElementById('project_id').value,
         purpose: document.getElementById('purpose').value || '',
-        project_url: document.getElementById('project_url').value || ''
+        project_url: document.getElementById('project_url').value || '',
+        update_status: true // 이메일 전송 후 프로젝트 상태를 reception_complete로 업데이트
     };
 
-    fetch('/project/{{ project.id if project else "" }}/send-email/{{ email_type.value }}', {
+    const projectId = document.getElementById('project_id').value;
+    console.log('이메일 전송 시작, 프로젝트 ID:', projectId);
+
+    fetch(`/project/${projectId}/send-email/submission-complete`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            // HTTP 오류 발생 시 응답을 JSON으로 파싱하여 오류 메시지 추출
+            return response.json().then(errorData => {
+                throw new Error(`서버 오류 (${response.status}): ${errorData.message || '알 수 없는 오류'}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             alert('이메일이 성공적으로 전송되었습니다.');
-            {% if project %}
-            window.location.href = '/project/{{ project.id }}';
-            {% else %}
-            window.location.href = '/';
-            {% endif %}
+            window.location.href = `/project/${projectId}`;
         } else {
             alert('이메일 전송 실패: ' + data.message);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('이메일 전송 중 오류가 발생했습니다.');
+        console.error('이메일 전송 중 오류:', error);
+        alert('이메일 전송 중 오류가 발생했습니다: ' + error.message);
     });
 }
 
