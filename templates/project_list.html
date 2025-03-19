@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RTM AI POC 프로젝트 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .nav-link.active {
+            background-color: #0d6efd;
+            color: white !important;
+        }
+        .project-card {
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .project-card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .status-badge {
+            font-size: 0.8rem;
+        }
+        .email-history {
+            font-size: 0.9rem;
+        }
+        .email-success {
+            color: #198754;
+        }
+        .email-failed {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">RTM AI POC</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">신청하기</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/projects">프로젝트 관리</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">프로젝트 목록</h2>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>프로젝트 ID</th>
+                                        <th>신청자</th>
+                                        <th>회사</th>
+                                        <th>상태</th>
+                                        <th>신청일</th>
+                                        <th>이메일 이력</th>
+                                        <th>관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projectList">
+                                    {% for project in projects %}
+                                    <tr>
+                                        <td>{{ project.id }}</td>
+                                        <td>{{ project.name }}</td>
+                                        <td>{{ project.company }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ get_status_color(project.status) }}">
+                                                {{ get_status_text(project.status) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    onclick="showEmailHistory('{{ project.id }}')">
+                                                이메일 이력
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" 
+                                                    onclick="manageProject('{{ project.id }}')">
+                                                관리
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이메일 이력 모달 -->
+    <div class="modal fade" id="emailHistoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">이메일 발송 이력</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="emailHistoryList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function get_status_color(status) {
+            const colors = {
+                'initial_request': 'secondary',
+                'application_complete': 'primary',
+                'reception_complete': 'info',
+                'cancelled': 'danger',
+                'completed': 'success'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function get_status_text(status) {
+            const texts = {
+                'initial_request': '초기 신청',
+                'application_complete': '신청 완료',
+                'reception_complete': '접수 완료',
+                'cancelled': '취소됨',
+                'completed': '완료'
+            };
+            return texts[status] || status;
+        }
+
+        async function showEmailHistory(projectId) {
+            try {
+                const response = await fetch(`/api/project/${projectId}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const historyList = document.getElementById('emailHistoryList');
+                    historyList.innerHTML = data.project.email_history.map(history => `
+                        <div class="email-history mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>${history.subject}</span>
+                                <span class="badge bg-${history.status === 'success' ? 'success' : 'danger'}">
+                                    ${history.status === 'success' ? '성공' : '실패'}
+                                </span>
+                            </div>
+                            <small class="text-muted">${history.sent_at}</small>
+                        </div>
+                    `).join('');
+                    
+                    new bootstrap.Modal(document.getElementById('emailHistoryModal')).show();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('이메일 이력을 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function manageProject(projectId) {
+            window.location.href = `/main?project_id=${projectId}`;
+        }
+
+        // 자동 새로고침
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const projectList = document.getElementById('projectList');
+                    projectList.innerHTML = data.projects.map(project => `
+                        <tr>
+                            <td>${project.id}</td>
+                            <td>${project.name}</td>
+                            <td>${project.company}</td>
+                            <td>
+                                <span class="badge bg-${get_status_color(project.status)}">
+                                    ${get_status_text(project.status)}
+                                </span>
+                            </td>
+                            <td>${project.created_at}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="showEmailHistory('${project.id}')">
+                                    이메일 이력
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" 
+                                        onclick="manageProject('${project.id}')">
+                                    관리
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }, 30000); // 30초마다 새로고침
+    </script>
+</body>
+</html> 

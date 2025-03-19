@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTM AI POC 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #ec6707;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .btn-primary {
+            background-color: #ec6707;
+            border-color: #ec6707;
+        }
+        .btn-primary:hover {
+            background-color: #d55b06;
+            border-color: #d55b06;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        .status-initial {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .status-complete {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+        .status-finished {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .project-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">RTM AI POC 프로젝트 관리</h2>
+            </div>
+            <div class="card-body">
+                <!-- 프로젝트 검색 -->
+                <div class="mb-4">
+                    <form id="searchForm" class="row g-3">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="projectId" placeholder="프로젝트 ID를 입력하세요">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">검색</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 프로젝트 정보 -->
+                <div id="projectInfo" style="display: none;">
+                    <div class="project-info">
+                        <h4>프로젝트 정보</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>프로젝트 ID:</strong> <span id="infoProjectId"></span></p>
+                                <p><strong>신청자:</strong> <span id="infoName"></span></p>
+                                <p><strong>회사:</strong> <span id="infoCompany"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>이메일:</strong> <span id="infoEmail"></span></p>
+                                <p><strong>연락처:</strong> <span id="infoPhone"></span></p>
+                                <p><strong>상태:</strong> <span id="infoStatus" class="status-badge"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 상태 변경 버튼 -->
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="updateStatus('application_complete')">신청완료</button>
+                        <button class="btn btn-info" onclick="updateStatus('reception_complete')">접수완료</button>
+                        <button class="btn btn-warning" onclick="updateStatus('cancel')">취소</button>
+                        <button class="btn btn-primary" onclick="updateStatus('complete')">완료</button>
+                    </div>
+
+                    <!-- 추가 안내 메일 -->
+                    <div class="mt-4">
+                        <h5>추가 안내 메일</h5>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="additionalMessage" rows="3" placeholder="추가 안내 메시지를 입력하세요"></textarea>
+                        </div>
+                        <button class="btn btn-secondary" onclick="sendAdditionalEmail()">안내 메일 발송</button>
+                    </div>
+
+                    <!-- 완료 보고서 -->
+                    <div class="mt-4">
+                        <h5>완료 보고서</h5>
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="completionReport" accept=".pdf">
+                        </div>
+                        <button class="btn btn-primary" onclick="sendCompletionReport()">보고서 발송</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 프로젝트 검색
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await searchProject();
+        });
+
+        async function searchProject() {
+            const projectId = document.getElementById('projectId').value.trim();
+            if (!projectId) {
+                alert('프로젝트 ID를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/project/${projectId}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    displayProjectInfo(data.project);
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('프로젝트 정보를 가져오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function displayProjectInfo(project) {
+            document.getElementById('infoProjectId').textContent = project.id;
+            document.getElementById('infoName').textContent = project.name;
+            document.getElementById('infoCompany').textContent = project.company;
+            document.getElementById('infoEmail').textContent = project.email;
+            document.getElementById('infoPhone').textContent = project.phone;
+            
+            const statusBadge = document.getElementById('infoStatus');
+            statusBadge.textContent = getStatusText(project.status);
+            statusBadge.className = 'status-badge status-' + project.status.toLowerCase();
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'initial_request': '초기 신청',
+                'application_complete': '신청 완료',
+                'reception_complete': '접수 완료',
+                'cancelled': '취소됨',
+                'completed': '완료'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 상태 업데이트
+        async function updateStatus(newStatus) {
+            const projectId = document.getElementById('projectId').value.trim();
+            if (!projectId) {
+                alert('프로젝트 ID를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/project/${projectId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    alert(data.message);
+                    searchProject(); // 프로젝트 정보 새로고침
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('상태 업데이트 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 추가 안내 메일 발송
+        async function sendAdditionalEmail() {
+            const projectId = document.getElementById('projectId').value.trim();
+            const message = document.getElementById('additionalMessage').value.trim();
+
+            if (!projectId) {
+                alert('프로젝트 ID를 입력해주세요.');
+                return;
+            }
+
+            if (!message) {
+                alert('메시지를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/project/${projectId}/additional-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                if (data.status === 'success') {
+                    document.getElementById('additionalMessage').value = '';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('추가 안내 메일 발송 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 완료 보고서 발송
+        async function sendCompletionReport() {
+            const projectId = document.getElementById('projectId').value.trim();
+            const fileInput = document.getElementById('completionReport');
+            const file = fileInput.files[0];
+
+            if (!projectId) {
+                alert('프로젝트 ID를 입력해주세요.');
+                return;
+            }
+
+            if (!file) {
+                alert('완료 보고서 파일을 선택해주세요.');
+                return;
+            }
+
+            if (!file.name.endsWith('.pdf')) {
+                alert('PDF 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`/api/project/${projectId}/completion-report`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                if (data.status === 'success') {
+                    fileInput.value = '';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('완료 보고서 발송 중 오류가 발생했습니다.');
+            }
+        }
+    </script>
+</body>
+</html> 

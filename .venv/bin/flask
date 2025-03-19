@@ -1,4 +1,4 @@
-#!/Users/rtm/Documents/GitHub/work/utils/online-poc-mgmt/.venv/bin/python3.11
+#!/Users/rtm/Documents/GitHub/work/utils/online-poc-mgmt/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
