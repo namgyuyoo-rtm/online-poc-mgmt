@@ -1684,7 +1684,6 @@ def create_email_templates():
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ logo }}" alt="RTM AI Logo" style="max-width: 150px;">
             <h2>RTM AI POC 취소 안내</h2>
         </div>
         
@@ -1706,7 +1705,7 @@ def create_email_templates():
         
         <div class="footer">
             <p>본 이메일은 자동발송 메일입니다. 문의사항은 담당자에게 연락 바랍니다.</p>
-            <p>&copy; 2023 RTM Inc. All Rights Reserved.</p>
+            <p>&copy; 2025 RTM Inc. All Rights Reserved.</p>
         </div>
     </div>
 </body>
@@ -1733,7 +1732,6 @@ def create_email_templates():
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ logo }}" alt="RTM AI Logo" style="max-width: 150px;">
             <h2>RTM AI POC 지연 안내</h2>
         </div>
         
@@ -1760,7 +1758,7 @@ def create_email_templates():
         
         <div class="footer">
             <p>본 이메일은 자동발송 메일입니다. 문의사항은 담당자에게 연락 바랍니다.</p>
-            <p>&copy; 2023 RTM Inc. All Rights Reserved.</p>
+            <p>&copy; 2025 RTM Inc. All Rights Reserved.</p>
         </div>
     </div>
 </body>
@@ -1788,7 +1786,6 @@ def create_email_templates():
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ logo }}" alt="RTM AI Logo" style="max-width: 150px;">
             <h2>RTM AI POC 완료 보고서</h2>
         </div>
         
@@ -1818,7 +1815,7 @@ def create_email_templates():
         
         <div class="footer">
             <p>본 이메일은 자동발송 메일입니다. 문의사항은 담당자에게 연락 바랍니다.</p>
-            <p>&copy; 2023 RTM Inc. All Rights Reserved.</p>
+            <p>&copy; 2025 RTM Inc. All Rights Reserved.</p>
         </div>
     </div>
 </body>
@@ -1845,7 +1842,6 @@ def create_email_templates():
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ logo }}" alt="RTM AI Logo" style="max-width: 150px;">
             <h2>{{ email_subject|default('RTM AI POC 안내') }}</h2>
         </div>
         
@@ -1873,7 +1869,7 @@ def create_email_templates():
         
         <div class="footer">
             <p>본 이메일은 자동발송 메일입니다. 문의사항은 담당자에게 연락 바랍니다.</p>
-            <p>&copy; 2023 RTM Inc. All Rights Reserved.</p>
+            <p>&copy; 2025 RTM Inc. All Rights Reserved.</p>
         </div>
     </div>
 </body>
