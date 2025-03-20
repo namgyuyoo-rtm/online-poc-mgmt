@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTM AI POC 안내</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{ 로고 }}" alt="RTM Logo" class="logo">
+            <h2>RTM AI POC 안내</h2>
+        </div>
+        <div class="content">
+            <p>안녕하세요, {{ name }}님.</p>
+            <p>RTM AI POC 과제와 관련하여 안내드립니다.</p>
+            
+            <h3>프로젝트 정보</h3>
+            <table>
+                <tr>
+                    <th>항목</th>
+                    <th>내용</th>
+                </tr>
+                <tr>
+                    <td>프로젝트 ID</td>
+                    <td>{{ project_id }}</td>
+                </tr>
+                <tr>
+                    <td>신청자</td>
+                    <td>{{ name }} ({{ company }})</td>
+                </tr>
+                <tr>
+                    <td>접수 시각</td>
+                    <td>{{ 접수시각 }}</td>
+                </tr>
+                <tr>
+                    <td>POC 유형</td>
+                    <td>{{ project_type }}</td>
+                </tr>
+            </table>
+            
+            <p>프로젝트 관리 페이지에서 자세한 사항을 확인하실 수 있습니다.</p>
+            <p><a href="{{ 프로젝트관리페이지 }}" class="button">프로젝트 관리 페이지 이동</a></p>
+            
+            <p>추가 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.</p>
+            <p>감사합니다.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2023 RTM Inc. All rights reserved.</p>
+            <p>이 이메일은 자동으로 발송되었습니다.</p>
+        </div>
+    </div>
+</body>
+</html>

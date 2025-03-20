@@ -10,6 +10,12 @@
             <div class="form-container">
                 <h1 class="mb-4">RTM AI POC 접수 완료 메일 발송</h1>
                 
+                {% if error %}
+                <div class="alert alert-danger mb-4">
+                    <strong>오류:</strong> {{ error }}
+                </div>
+                {% endif %}
+                
                 <div class="mb-4">
                     <h5>텍스트 붙여넣기 영역</h5>
                     <div id="pasteArea" contenteditable="true" class="form-control">여기에 텍스트를 붙여넣으세요</div>
@@ -441,30 +447,52 @@
             project_id: document.getElementById('project_id').value,
             purpose: document.getElementById('purpose').value || '',
             project_url: document.getElementById('project_url').value || '',
+            email_type: 'application_complete'  // 이메일 타입 지정
         };
 
         // 디버깅용 로그 추가
         console.log('Form data before sending:', formData);
 
-        fetch('/send', {
-            method: 'POST',
+        // 프로젝트 ID 중복 확인 먼저 수행
+        fetch(`/check-project-exists/${formData.project_id}`, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('이메일이 성공적으로 전송되었습니다.');
-                window.location.href = '/projects';
-            } else {
-                alert('이메일 전송 실패: ' + data.message);
+                'Content-Type': 'application/json'
             }
         })
+        .then(response => response.json())
+        .then(existsData => {
+            if (existsData.exists && existsData.email_sent) {
+                alert('이미 해당 프로젝트 ID로 이메일이 발송되었습니다. 다른 프로젝트 ID를 사용해주세요.');
+                return;
+            }
+            
+            // 중복 확인 후 이메일 발송 수행
+            fetch('/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Source-Page': 'application-complete'  // 소스 페이지 헤더 추가
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('이메일이 성공적으로 전송되었습니다.');
+                    window.location.href = '/projects';
+                } else {
+                    alert('이메일 전송 실패: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('이메일 전송 중 오류가 발생했습니다.');
+            });
+        })
         .catch(error => {
-            console.error('Error:', error);
-            alert('이메일 전송 중 오류가 발생했습니다.');
+            console.error('Error checking project ID:', error);
+            alert('프로젝트 ID 확인 중 오류가 발생했습니다.');
         });
     }
 

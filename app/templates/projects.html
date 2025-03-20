@@ -11,20 +11,52 @@
         </a>
     </div>
 
+    <!-- 검색 및 필터 영역 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="회사명, 담당자, ID 검색...">
+                        <button class="btn btn-outline-secondary" type="button" onclick="applyFilters()">
+                            <i class="bi bi-search"></i> 검색
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="statusFilter" class="form-select" onchange="applyFilters()">
+                        <option value="">모든 상태</option>
+                        <option value="application_complete">신청 완료</option>
+                        <option value="reception_complete">접수 완료</option>
+                        <option value="poc_in_progress">POC 진행중</option>
+                        <option value="delayed">POC 지연</option>
+                        <option value="poc_complete">POC 완료</option>
+                        <option value="cancelled">취소됨</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                        <i class="bi bi-x-circle"></i> 필터 초기화
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover" id="projectsTable">
             <thead class="table-dark">
                 <tr>
-                    <th>프로젝트 ID</th>
-                    <th>회사명</th>
-                    <th>담당자</th>
-                    <th>이메일</th>
-                    <th>연락처</th>
-                    <th>프로젝트 유형</th>
-                    <th>상태</th>
-                    <th>신청일시</th>
-                    <th>예상완료일</th>
-                    <th>관리</th>
+                    <th onclick="sortTable(0)">프로젝트 ID <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(1)">회사명 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(2)">담당자 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(3)">이메일 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(4)">연락처 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(5)">프로젝트 유형 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(6)">상태 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(7)">신청일시 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(8)">예상완료일 <i class="bi bi-arrow-down-up"></i></th>
+                    <th onclick="sortTable(9)">D-day <i class="bi bi-arrow-down-up"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -39,22 +71,36 @@
                     <td>{{ project.phone }}</td>
                     <td>{{ project.project_type }}</td>
                     <td>
-                        {{ project.status.value }}
+                        <span class="badge {% if project.status.value == 'application_complete' %}bg-primary
+                            {% elif project.status.value == 'reception_complete' %}bg-info
+                            {% elif project.status.value == 'poc_in_progress' %}bg-warning text-dark
+                            {% elif project.status.value == 'delayed' %}bg-warning
+                            {% elif project.status.value == 'poc_complete' %}bg-success
+                            {% elif project.status.value == 'cancelled' %}bg-danger
+                            {% endif %}">
+                            {{ project.status.value }}
+                        </span>
                     </td>
                     <td>{{ project.created_at.strftime('%Y-%m-%d %H:%M') if project.created_at else '-' }}</td>
                     <td>{{ project.expected_report_date.strftime('%Y-%m-%d') if project.expected_report_date else '-' }}</td>
                     <td>
-                        <div class="btn-group">
-                            {% if project.project_url %}
-                            <a href="{{ project.project_url }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                <i class="bi bi-link"></i>
-                            </a>
-                            {% endif %}
-                            <button type="button" class="btn btn-sm btn-outline-info" 
-                                    onclick="updateStatus('{{ project.id }}')">
-                                <i class="bi bi-arrow-clockwise"></i>
-                            </button>
-                        </div>
+                        {% if project.expected_report_date and project.status.value not in ['cancelled', 'poc_complete'] %}
+                            {% set days_left = (project.expected_report_date.date() - today).days %}
+                            <span class="badge {% if days_left < 0 %}bg-danger
+                                {% elif days_left <= 3 %}bg-warning text-dark
+                                {% elif days_left <= 7 %}bg-info
+                                {% else %}bg-success{% endif %}">
+                                {% if days_left < 0 %}
+                                    D+{{ days_left|abs }}
+                                {% elif days_left == 0 %}
+                                    D-day
+                                {% else %}
+                                    D-{{ days_left }}
+                                {% endif %}
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
                 </tr>
                 {% else %}
@@ -131,6 +177,156 @@ function saveStatus() {
         alert('상태 변경 중 오류가 발생했습니다.');
     });
 }
+
+// 테이블 정렬 기능
+let sortDirection = 1; // 1: 오름차순, -1: 내림차순
+let lastSortedColumn = -1;
+
+function sortTable(columnIndex) {
+    const table = document.getElementById('projectsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // 정렬 방향 설정
+    if (lastSortedColumn === columnIndex) {
+        sortDirection *= -1;
+    } else {
+        sortDirection = 1;
+        lastSortedColumn = columnIndex;
+    }
+    
+    // 정렬 함수
+    rows.sort((a, b) => {
+        const cellA = a.cells[columnIndex].textContent.trim();
+        const cellB = b.cells[columnIndex].textContent.trim();
+        
+        // D-day 컬럼인 경우 (index 9)
+        if (columnIndex === 9) {
+            const dayA = cellA.match(/(D-|D\+)(\d+)|D-day/);
+            const dayB = cellB.match(/(D-|D\+)(\d+)|D-day/);
+            
+            if (!dayA && !dayB) return 0;
+            if (!dayA) return 1;
+            if (!dayB) return -1;
+            
+            let valueA, valueB;
+            
+            if (dayA[0] === 'D-day') {
+                valueA = 0;
+            } else {
+                valueA = parseInt(dayA[2]) * (dayA[1] === 'D-' ? 1 : -1);
+            }
+            
+            if (dayB[0] === 'D-day') {
+                valueB = 0;
+            } else {
+                valueB = parseInt(dayB[2]) * (dayB[1] === 'D-' ? 1 : -1);
+            }
+            
+            return (valueA - valueB) * sortDirection;
+        }
+        
+        // 날짜 컬럼인 경우 (index 7, 8)
+        if (columnIndex === 7 || columnIndex === 8) {
+            const dateA = parseDateTime(cellA);
+            const dateB = parseDateTime(cellB);
+            
+            if (dateA && dateB) {
+                return (dateA - dateB) * sortDirection;
+            }
+        }
+        
+        // 일반 문자열 비교
+        return cellA.localeCompare(cellB) * sortDirection;
+    });
+    
+    // 정렬된 행을 테이블에 다시 추가
+    rows.forEach(row => tbody.appendChild(row));
+    
+    // 정렬 아이콘 갱신
+    updateSortIcons(columnIndex);
+}
+
+function parseDateTime(dateTimeStr) {
+    if (dateTimeStr === '-') return null;
+    
+    // YYYY-MM-DD 또는 YYYY-MM-DD HH:MM 형식 확인
+    const dateMatch = dateTimeStr.match(/(\d{4}-\d{2}-\d{2})(?: (\d{2}:\d{2}))?/);
+    
+    if (dateMatch) {
+        let dateStr = dateMatch[1];
+        const timeStr = dateMatch[2] || '00:00';
+        return new Date(`${dateStr}T${timeStr}`);
+    }
+    
+    return null;
+}
+
+function updateSortIcons(activeColumn) {
+    const headers = document.querySelectorAll('#projectsTable th');
+    
+    headers.forEach((header, index) => {
+        const icon = header.querySelector('i.bi');
+        
+        if (index === activeColumn) {
+            icon.className = sortDirection === 1 ? 'bi bi-sort-down' : 'bi bi-sort-up';
+        } else {
+            icon.className = 'bi bi-arrow-down-up';
+        }
+    });
+}
+
+// 검색 및 필터 기능
+function applyFilters() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const table = document.getElementById('projectsTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        let shouldShow = true;
+        
+        // 검색어 필터링
+        if (searchTerm) {
+            let matched = false;
+            // 프로젝트 ID, 회사명, 담당자에서 검색
+            for (let i = 0; i < 3; i++) {
+                if (row.cells[i] && row.cells[i].textContent.toLowerCase().includes(searchTerm)) {
+                    matched = true;
+                    break;
+                }
+            }
+            shouldShow = matched;
+        }
+        
+        // 상태 필터링
+        if (shouldShow && statusFilter) {
+            const status = row.cells[6].textContent.trim();
+            shouldShow = status.includes(statusFilter);
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    
+    const table = document.getElementById('projectsTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        row.style.display = '';
+    });
+}
+
+// 검색 입력 필드에서 엔터키 이벤트 처리
+document.getElementById('searchInput').addEventListener('keyup', function(event) {
+    if (event.key === 'Enter') {
+        applyFilters();
+    }
+});
 </script>
 {% endblock %}
 
@@ -138,10 +334,21 @@ function saveStatus() {
 <style>
 .table th {
     white-space: nowrap;
+    cursor: pointer;
+    position: relative;
+}
+.table th:hover {
+    background-color: rgba(0, 0, 0, 0.8);
 }
 .badge {
     font-size: 0.9em;
     padding: 0.5em 0.7em;
+}
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+#projectsTable {
+    margin-bottom: 0;
 }
 </style>
 {% endblock %} 

@@ -1,20 +1,28 @@
 <!-- 프로젝트 취소 모달 -->
-<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="cancelModalLabel">프로젝트 취소</h5>
+                <h5 class="modal-title" id="passwordModalLabel">비밀번호 확인</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
+                <p>프로젝트를 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+                <div class="mb-3">
+                    <label for="cancelPassword" class="form-label">비밀번호</label>
+                    <input type="password" class="form-control" id="cancelPassword" placeholder="비밀번호를 입력하세요">
+                    <div class="form-text text-danger" id="cancelPasswordError" style="display: none;">
+                        비밀번호가 일치하지 않습니다.
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label for="cancelReason" class="form-label">취소 사유</label>
-                    <textarea class="form-control" id="cancelReason" rows="3" placeholder="취소 사유를 입력해주세요"></textarea>
+                    <textarea class="form-control" id="cancelReason" rows="3" required placeholder="취소 사유를 입력해주세요"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="btn btn-danger" onclick="cancelProject()">취소 확인</button>
+                <button type="button" class="btn btn-danger" onclick="cancelProject()">확인</button>
             </div>
         </div>
     </div>

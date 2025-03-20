@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}RTM AI POC 기타 안내 메일{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- 왼쪽: 폼 -->
+        <div class="col-md-6">
+            <div class="form-container">
+                <h1 class="mb-4">기타 안내 메일 발송</h1>
+                
+                <div id="validationSummary" class="alert alert-danger d-none">
+                    <strong>입력 오류:</strong> 모든 필수 입력란을 올바르게 작성해주세요.
+                </div>
+
+                <form method="POST" id="pocForm" enctype="multipart/form-data">
+                    {{ form.csrf_token }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.name.label(class="form-label") }} <span class="text-danger">*</span>
+                            {{ form.name(class="form-control", placeholder="이름", readonly=True) }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.company.label(class="form-label") }} <span class="text-danger">*</span>
+                            {{ form.company(class="form-control", placeholder="회사명", readonly=True) }}
+                            {% if form.company.errors %}
+                                <div class="text-danger">{{ form.company.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.email.label(class="form-label") }} <span class="text-danger">*</span>
+                            {{ form.email(class="form-control", placeholder="이메일 주소", readonly=True) }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.phone.label(class="form-label") }} <span class="text-danger">*</span>
+                            {{ form.phone(class="form-control", placeholder="010-1234-5678", readonly=True) }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger">{{ form.phone.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.project_type.label(class="form-label") }} <span class="text-danger">*</span>
+                            {{ form.project_type(class="form-control", placeholder="프로젝트 유형", readonly=True) }}
+                            {% if form.project_type.errors %}
+                                <div class="text-danger">{{ form.project_type.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.project_id.label(class="form-label") }} <span class="text-danger">*</span>
+                            {{ form.project_id(class="form-control", placeholder="프로젝트 ID", readonly=True) }}
+                            {% if form.project_id.errors %}
+                                <div class="text-danger">{{ form.project_id.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.project_url.label(class="form-label") }} <span class="text-danger">*</span>
+                        {{ form.project_url(class="form-control", placeholder="https://example.com/project", readonly=True) }}
+                        {% if form.project_url.errors %}
+                            <div class="text-danger">{{ form.project_url.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email_subject" class="form-label">이메일 제목 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="email_subject" required placeholder="이메일 제목을 입력하세요">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email_content" class="form-label">이메일 내용 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="email_content" rows="10" required placeholder="이메일 내용을 입력하세요"></textarea>
+                        <small class="text-muted">HTML 태그를 사용할 수 있습니다. 예: &lt;strong&gt;진하게&lt;/strong&gt;, &lt;br&gt;(줄바꿈)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="attachment" class="form-label">첨부 파일 (선택사항)</label>
+                        <input type="file" class="form-control" id="attachment">
+                        <small class="text-muted">최대 10MB, 허용 형식: PDF, DOCX, XLSX, PPTX, PNG, JPG</small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary", onclick="return validateForm();") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 미리보기 -->
+        <div class="col-md-6">
+            <div class="preview-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">이메일 미리보기</h3>
+                    <div>
+                        <div id="validationStatus" class="badge bg-warning mb-2 d-none">유효성 검사 필요</div>
+                        <button class="btn btn-primary" onclick="sendEmail()" id="sendEmailBtn" disabled>
+                            <i class="bi bi-envelope"></i> 이메일 발송
+                        </button>
+                    </div>
+                </div>
+                <iframe id="previewFrame" class="preview-frame" src="{{ preview_url if preview_url else 'about:blank' }}"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .container-fluid {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    .form-container, .preview-container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+    .preview-container {
+        position: sticky;
+        top: 20px;
+    }
+    .btn-primary {
+        background-color: #ec6707;
+        border-color: #ec6707;
+    }
+    .btn-primary:hover {
+        background-color: #d55b06;
+        border-color: #d55b06;
+    }
+    .preview-frame {
+        width: 100%;
+        height: 800px;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Function to validate form and enable/disable send button
+    function validateForm() {
+        const requiredFields = [
+            'name',
+            'company',
+            'email',
+            'phone',
+            'project_type',
+            'project_id',
+            'project_url',
+            'email_subject',
+            'email_content'
+        ];
+        
+        let isValid = true;
+        let errorCount = 0;
+        const validationErrors = [];
+        
+        // Check if all required fields have values
+        for (const field of requiredFields) {
+            const element = document.getElementById(field);
+            if (!element || !element.value.trim()) {
+                isValid = false;
+                element.classList.add('is-invalid');
+                errorCount++;
+                validationErrors.push(`${element.getAttribute('placeholder') || field} 필드가 비어 있습니다.`);
+            } else {
+                element.classList.remove('is-invalid');
+            }
+        }
+
+        // Validate file size if attachment is present
+        const fileInput = document.getElementById('attachment');
+        if (fileInput && fileInput.files.length > 0) {
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (fileInput.files[0].size > maxSize) {
+                isValid = false;
+                fileInput.classList.add('is-invalid');
+                errorCount++;
+                validationErrors.push('파일 크기는 10MB를 초과할 수 없습니다.');
+            }
+        }
+        
+        // Show/hide validation summary
+        const validationSummary = document.getElementById('validationSummary');
+        const validationStatus = document.getElementById('validationStatus');
+        
+        if (errorCount > 0) {
+            validationSummary.classList.remove('d-none');
+            validationSummary.innerHTML = `<strong>입력 오류 (${errorCount}개):</strong> <ul class="mb-0 mt-1 ps-3">${validationErrors.map(err => `<li>${err}</li>`).join('')}</ul>`;
+            
+            validationStatus.classList.remove('d-none');
+            validationStatus.classList.remove('bg-success');
+            validationStatus.classList.add('bg-warning');
+            validationStatus.textContent = `유효성 검사 실패 (${errorCount}개 오류)`;
+        } else {
+            validationSummary.classList.add('d-none');
+            
+            validationStatus.classList.remove('d-none');
+            validationStatus.classList.remove('bg-warning');
+            validationStatus.classList.add('bg-success');
+            validationStatus.textContent = '유효성 검사 통과';
+        }
+        
+        // Enable or disable the send button
+        document.getElementById('sendEmailBtn').disabled = !isValid;
+        
+        return isValid;
+    }
+
+    // Initialize the form
+    window.addEventListener('DOMContentLoaded', (event) => {
+        document.getElementById('email_subject').value = "RTM AI POC 안내";
+        updatePreview();
+        validateForm();
+    });
+
+    // 폼 데이터가 변경될 때마다 미리보기 업데이트
+    function updatePreview() {
+        // Validate form before updating preview
+        validateForm();
+        
+        const formData = new FormData();
+        formData.append('name', document.getElementById('name').value);
+        formData.append('company', document.getElementById('company').value);
+        formData.append('email', document.getElementById('email').value);
+        formData.append('phone', document.getElementById('phone').value);
+        formData.append('project_type', document.getElementById('project_type').value);
+        formData.append('project_id', document.getElementById('project_id').value);
+        formData.append('project_url', document.getElementById('project_url').value);
+        formData.append('email_subject', document.getElementById('email_subject').value);
+        formData.append('email_content', document.getElementById('email_content').value);
+        
+        const fileInput = document.getElementById('attachment');
+        if (fileInput.files.length > 0) {
+            formData.append('attachment', fileInput.files[0]);
+        }
+
+        fetch('/preview/misc', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+            const previewFrame = document.getElementById('previewFrame');
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+            
+            // Validate form after preview is updated
+            validateForm();
+        })
+        .catch(error => {
+            console.error('미리보기 생성 중 오류:', error);
+            alert('미리보기를 생성하는 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 폼 필드 변경 감지
+    document.getElementById('pocForm').addEventListener('input', function() {
+        updatePreview();
+        validateForm();
+    });
+
+    // 변경 가능한 필드들에 이벤트 리스너 추가
+    document.getElementById('email_subject').addEventListener('input', updatePreview);
+    document.getElementById('email_content').addEventListener('input', updatePreview);
+    document.getElementById('attachment').addEventListener('change', updatePreview);
+
+    function sendEmail() {
+        // Check form validity before sending
+        if (!validateForm()) {
+            alert('모든 필수 입력란을 올바르게 작성해주세요.');
+            return false;
+        }
+        
+        // 폼 데이터 수집
+        const formData = new FormData();
+        formData.append('name', document.getElementById('name').value);
+        formData.append('company', document.getElementById('company').value);
+        formData.append('email', document.getElementById('email').value);
+        formData.append('phone', document.getElementById('phone').value);
+        formData.append('project_type', document.getElementById('project_type').value);
+        formData.append('project_id', document.getElementById('project_id').value);
+        formData.append('project_url', document.getElementById('project_url').value);
+        formData.append('email_subject', document.getElementById('email_subject').value);
+        formData.append('email_content', document.getElementById('email_content').value);
+        formData.append('email_type', 'misc');
+        
+        const fileInput = document.getElementById('attachment');
+        if (fileInput.files.length > 0) {
+            formData.append('attachment', fileInput.files[0]);
+        }
+
+        fetch('/send-with-file', {
+            method: 'POST',
+            headers: {
+                'X-Source-Page': 'misc'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('이메일이 성공적으로 전송되었습니다.');
+                window.location.href = '/projects';
+            } else {
+                alert('이메일 전송 실패: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('이메일 전송 중 오류가 발생했습니다.');
+        });
+    }
+
+    // 전송 버튼에 이벤트 리스너 추가
+    document.addEventListener('DOMContentLoaded', function() {
+        const submitButton = document.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (validateForm()) {
+                    sendEmail();
+                } else {
+                    alert('모든 필수 입력란을 올바르게 작성해주세요.');
+                }
+            });
+        }
+        
+        // 초기 미리보기 업데이트
+        updatePreview();
+    });
+</script>
+{% endblock %} 

@@ -4,68 +4,247 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="jumbotron bg-white shadow-sm p-5 rounded">
-        <h1 class="display-4">RTM AI POC 시스템</h1>
-        <p class="lead">AI POC 프로젝트 관리 시스템에 오신 것을 환영합니다.</p>
-        <hr class="my-4">
-        <div class="row mt-4">
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="fas fa-envelope text-primary"></i> 
-                            POC 신청 완료 메일
-                        </h5>
-                        <p class="card-text">새로운 POC 프로젝트 신청을 위한 이메일을 발송합니다.</p>
-                        <a href="{{ url_for('main.application_complete') }}" class="btn btn-primary">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="jumbotron bg-white shadow-sm p-4 rounded">
+                <h1 class="display-5">RTM AI POC 시스템</h1>
+                <p class="lead">AI POC 프로젝트 관리 및 메일 발송 시스템</p>
+                <hr class="my-3">
+                <p>신규 프로젝트 생성 및 기존 프로젝트 관리를 위한 통합 대시보드입니다.</p>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools"></i> 빠른 작업
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.application_complete') }}" class="btn btn-outline-primary">
                             <i class="fas fa-paper-plane"></i> 신청 완료 메일 발송
                         </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="fas fa-check-circle text-success"></i> 
-                            POC 접수 완료 메일
-                        </h5>
-                        <p class="card-text">POC 프로젝트 접수 완료 이메일을 발송합니다.</p>
-                        <a href="{{ url_for('main.submission_complete') }}" class="btn btn-success">
-                            <i class="fas fa-paper-plane"></i> 접수 완료 메일 발송
+                        <a href="{{ url_for('main.submission_complete') }}" class="btn btn-outline-success">
+                            <i class="fas fa-check-circle"></i> 접수 완료 메일 발송
                         </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="fas fa-tasks text-info"></i> 
-                            프로젝트 관리
-                        </h5>
-                        <p class="card-text">진행 중인 프로젝트의 상태를 확인하고 관리합니다.</p>
-                        <a href="{{ url_for('main.projects') }}" class="btn btn-info">
-                            <i class="fas fa-list"></i> 프로젝트 목록
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="fas fa-history text-secondary"></i> 
-                            이메일 이력
-                        </h5>
-                        <p class="card-text">발송된 이메일 기록을 확인하고 관리합니다.</p>
-                        <a href="{{ url_for('main.email_history') }}" class="btn btn-secondary">
-                            <i class="fas fa-envelope-open-text"></i> 이력 보기
+                        <a href="{{ url_for('main.projects') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> 모든 프로젝트 보기
                         </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 프로젝트 리스트 섹션 추가 -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+            <h5 class="mb-0">최근 프로젝트</h5>
+            <div class="d-flex">
+                <input type="text" id="mainSearchInput" class="form-control form-control-sm me-2" placeholder="회사명, 담당자 검색...">
+                <a href="{{ url_for('main.projects') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-list"></i> 모든 프로젝트
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if projects %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0" id="mainProjectsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th onclick="sortMainTable(0)">회사명 <i class="bi bi-arrow-down-up"></i></th>
+                            <th onclick="sortMainTable(1)">담당자 <i class="bi bi-arrow-down-up"></i></th>
+                            <th onclick="sortMainTable(2)">상태 <i class="bi bi-arrow-down-up"></i></th>
+                            <th onclick="sortMainTable(3)">생성일 <i class="bi bi-arrow-down-up"></i></th>
+                            <th onclick="sortMainTable(4)">D-day <i class="bi bi-arrow-down-up"></i></th>
+                            <th>액션</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr>
+                            <td>{{ project.company }}</td>
+                            <td>{{ project.name }}</td>
+                            <td>
+                                <span class="badge {% if project.status.value == 'application_complete' %}bg-primary
+                                    {% elif project.status.value == 'reception_complete' %}bg-info
+                                    {% elif project.status.value == 'poc_in_progress' %}bg-warning text-dark
+                                    {% elif project.status.value == 'delayed' %}bg-warning
+                                    {% elif project.status.value == 'poc_complete' %}bg-success
+                                    {% elif project.status.value == 'cancelled' %}bg-danger
+                                    {% endif %}">
+                                    {% if project.status.value == 'application_complete' %}
+                                        신청 완료
+                                    {% elif project.status.value == 'reception_complete' %}
+                                        접수 완료
+                                    {% elif project.status.value == 'poc_in_progress' %}
+                                        POC 진행중
+                                    {% elif project.status.value == 'delayed' %}
+                                        POC 지연
+                                    {% elif project.status.value == 'poc_complete' %}
+                                        POC 완료
+                                    {% elif project.status.value == 'cancelled' %}
+                                        취소됨
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>{{ project.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if project.expected_report_date and project.status.value not in ['cancelled', 'poc_complete'] %}
+                                    {% set days_left = (project.expected_report_date.date() - today).days %}
+                                    <span class="badge {% if days_left < 0 %}bg-danger
+                                        {% elif days_left <= 3 %}bg-warning text-dark
+                                        {% elif days_left <= 7 %}bg-info
+                                        {% else %}bg-success{% endif %}">
+                                        {% if days_left < 0 %}
+                                            D+{{ days_left|abs }}
+                                        {% elif days_left == 0 %}
+                                            D-day
+                                        {% else %}
+                                            D-{{ days_left }}
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">상세보기</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center p-4">
+                <p class="text-muted mb-0">등록된 프로젝트가 없습니다.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 메인 페이지 테이블 정렬 기능
+let mainSortDirection = 1; // 1: 오름차순, -1: 내림차순
+let mainLastSortedColumn = -1;
+
+function sortMainTable(columnIndex) {
+    const table = document.getElementById('mainProjectsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // 정렬 방향 설정
+    if (mainLastSortedColumn === columnIndex) {
+        mainSortDirection *= -1;
+    } else {
+        mainSortDirection = 1;
+        mainLastSortedColumn = columnIndex;
+    }
+    
+    // 정렬 함수
+    rows.sort((a, b) => {
+        const cellA = a.cells[columnIndex].textContent.trim();
+        const cellB = b.cells[columnIndex].textContent.trim();
+        
+        // D-day 컬럼인 경우 (index 4)
+        if (columnIndex === 4) {
+            const dayA = cellA.match(/(D-|D\+)(\d+)|D-day/);
+            const dayB = cellB.match(/(D-|D\+)(\d+)|D-day/);
+            
+            if (!dayA && !dayB) return 0;
+            if (!dayA) return 1;
+            if (!dayB) return -1;
+            
+            let valueA, valueB;
+            
+            if (dayA[0] === 'D-day') {
+                valueA = 0;
+            } else {
+                valueA = parseInt(dayA[2]) * (dayA[1] === 'D-' ? 1 : -1);
+            }
+            
+            if (dayB[0] === 'D-day') {
+                valueB = 0;
+            } else {
+                valueB = parseInt(dayB[2]) * (dayB[1] === 'D-' ? 1 : -1);
+            }
+            
+            return (valueA - valueB) * mainSortDirection;
+        }
+        
+        // 날짜 컬럼인 경우 (index 3)
+        if (columnIndex === 3) {
+            const dateA = new Date(cellA);
+            const dateB = new Date(cellB);
+            
+            if (!isNaN(dateA) && !isNaN(dateB)) {
+                return (dateA - dateB) * mainSortDirection;
+            }
+        }
+        
+        // 일반 문자열 비교
+        return cellA.localeCompare(cellB) * mainSortDirection;
+    });
+    
+    // 정렬된 행을 테이블에 다시 추가
+    rows.forEach(row => tbody.appendChild(row));
+    
+    // 정렬 아이콘 갱신
+    updateMainSortIcons(columnIndex);
+}
+
+function updateMainSortIcons(activeColumn) {
+    const headers = document.querySelectorAll('#mainProjectsTable th');
+    
+    headers.forEach((header, index) => {
+        const icon = header.querySelector('i.bi');
+        if (!icon) return;
+        
+        if (index === activeColumn) {
+            icon.className = mainSortDirection === 1 ? 'bi bi-sort-down' : 'bi bi-sort-up';
+        } else {
+            icon.className = 'bi bi-arrow-down-up';
+        }
+    });
+}
+
+// 메인 페이지 검색 기능
+document.getElementById('mainSearchInput').addEventListener('keyup', function() {
+    const searchTerm = this.value.toLowerCase();
+    const table = document.getElementById('mainProjectsTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const companyName = row.cells[0].textContent.toLowerCase();
+        const personName = row.cells[1].textContent.toLowerCase();
+        
+        if (companyName.includes(searchTerm) || personName.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.table th {
+    white-space: nowrap;
+    cursor: pointer;
+}
+.table th:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+#mainSearchInput {
+    width: 200px;
+}
+</style>
 {% endblock %} 

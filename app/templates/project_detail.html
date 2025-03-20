@@ -12,19 +12,22 @@
                 <span class="badge fs-6 {% if project.status.value == 'application_complete' %}bg-primary
                     {% elif project.status.value == 'reception_complete' %}bg-info
                     {% elif project.status.value == 'poc_in_progress' %}bg-warning text-dark
+                    {% elif project.status.value == 'delayed' %}bg-warning
                     {% elif project.status.value == 'poc_complete' %}bg-success
                     {% elif project.status.value == 'cancelled' %}bg-danger
                     {% endif %}">
                     {% if project.status.value == 'application_complete' %}
-                        신청 완료
+                        신청 완료(application_complete  )
                     {% elif project.status.value == 'reception_complete' %}
-                        접수 완료
+                        접수 완료(reception_complete)
                     {% elif project.status.value == 'poc_in_progress' %}
-                        POC 진행중
+                        POC 진행중(poc_in_progress)
+                    {% elif project.status.value == 'delayed' %}
+                        POC 지연(delayed)
                     {% elif project.status.value == 'poc_complete' %}
-                        POC 완료
+                        POC 완료(poc_complete)
                     {% elif project.status.value == 'cancelled' %}
-                        취소됨
+                        취소됨(cancelled)
                     {% endif %}
                 </span>
             </div>
@@ -53,6 +56,20 @@
                 </div>
             </div>
             {% endif %}
+            
+            <!-- 취소 및 삭제 버튼 -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    {% if project.status.value != 'cancelled' and project.status.value != 'poc_complete' %}
+                    <button class="btn btn-danger me-2" onclick="showCancelModal()">
+                        프로젝트 취소
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-dark" onclick="showDeleteModal()">
+                        프로젝트 삭제
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -60,8 +77,8 @@
     <div class="row">
         <!-- 신청 완료 -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100 {% if project.status.value != 'application_complete' or project.email_history|selectattr('email_type.value', 'equalto', 'application-complete')|list|length > 0 %}bg-light{% endif %}">
-                <div class="card-header {% if project.status.value == 'application_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'application-complete')|list|length == 0 %}bg-primary text-white{% endif %}">
+            <div class="card h-100 {% if project.status.value != 'application_complete' or project.email_history|selectattr('email_type.value', 'equalto', 'application_complete')|list|length > 0 %}bg-light{% endif %}">
+                <div class="card-header {% if project.status.value == 'application_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'application_complete')|list|length == 0 %}bg-primary text-white{% endif %}">
                     <h5 class="card-title mb-0">1. 신청 완료</h5>
                 </div>
                 <div class="card-body">
@@ -70,21 +87,15 @@
                     <p class="small text-muted">처리일: {{ initial_history.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
                     {% endif %}
                     
-                    {% if project.status.value == 'application_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'application-complete')|list|length == 0 %}
+                    {% if project.status.value == 'application_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'application_complete')|list|length == 0 %}
                     <div class="d-grid gap-2">
-                        <button class="btn btn-primary" onclick="sendEmail('application-complete')">
+                        <button class="btn btn-primary" onclick="sendEmail('application_complete')">
                             신청 완료 메일 보내기
-                        </button>
-                        <button class="btn btn-success" onclick="updateStatus('RECEPTION_COMPLETE')">
-                            메일 발송 완료 처리
-                        </button>
-                        <button class="btn btn-danger mt-3" onclick="showCancelModal()">
-                            프로젝트 취소
                         </button>
                     </div>
                     {% else %}
                     <div class="d-grid gap-2">
-                        <button class="btn btn-secondary" disabled>{% if project.email_history|selectattr('email_type.value', 'equalto', 'application-complete')|list|length > 0 %}처리 완료{% else %}처리 완료{% endif %}</button>
+                        <button class="btn btn-secondary" disabled>{% if project.email_history|selectattr('email_type.value', 'equalto', 'application_complete')|list|length > 0 %}처리 완료{% else %}처리 완료{% endif %}</button>
                     </div>
                     {% endif %}
                 </div>
@@ -93,8 +104,8 @@
 
         <!-- 접수 완료 -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100 {% if project.status.value not in ['reception_complete', 'application_complete'] or project.email_history|selectattr('email_type.value', 'equalto', 'application-complete')|list|length == 0 %}bg-light{% endif %}">
-                <div class="card-header {% if project.status.value == 'reception_complete' or project.email_history|selectattr('email_type.value', 'equalto', 'application-complete')|list|length > 0 %}bg-primary text-white{% endif %}">
+            <div class="card h-100 {% if project.status.value not in ['reception_complete', 'application_complete'] or (project.status.value == 'application_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'application_complete')|list|length == 0) %}bg-light{% endif %}">
+                <div class="card-header {% if (project.status.value == 'application_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'application_complete')|list|length > 0) or project.status.value == 'reception_complete' %}bg-primary text-white{% endif %}">
                     <h5 class="card-title mb-0">2. 접수 완료</h5>
                 </div>
                 <div class="card-body">
@@ -103,19 +114,13 @@
                     <p class="small text-muted">처리일: {{ reception_history.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
                     {% endif %}
 
-                    {% if project.email_history|selectattr('email_type.value', 'equalto', 'application-complete')|list|length > 0 and project.email_history|selectattr('email_type.value', 'equalto', 'submission-complete')|list|length == 0 %}
+                    {% if (project.status.value == 'application_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'application_complete')|list|length > 0) or (project.status.value == 'reception_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'submission_complete')|list|length == 0) %}
                     <div class="d-grid gap-2">
-                        <button class="btn btn-primary" onclick="sendEmail('submission-complete')">
+                        <button class="btn btn-primary" onclick="sendEmail('submission_complete')">
                             접수 완료 메일 보내기
                         </button>
-                        <button class="btn btn-success" onclick="startAnalysis()">
-                            분석 시작
-                        </button>
-                        <button class="btn btn-danger mt-3" onclick="showCancelModal()">
-                            프로젝트 취소
-                        </button>
                     </div>
-                    {% elif project.email_history|selectattr('email_type.value', 'equalto', 'submission-complete')|list|length > 0 %}
+                    {% elif project.email_history|selectattr('email_type.value', 'equalto', 'submission_complete')|list|length > 0 %}
                     <div class="d-grid gap-2">
                         <button class="btn btn-secondary" disabled>처리 완료</button>
                     </div>
@@ -130,8 +135,8 @@
 
         <!-- POC 진행중 -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100 {% if project.status.value not in ['poc_in_progress', 'reception_complete', 'application_complete'] %}bg-light{% endif %}">
-                <div class="card-header {% if project.status.value == 'poc_in_progress' %}bg-primary text-white{% endif %}">
+            <div class="card h-100 {% if project.status.value not in ['poc_in_progress', 'delayed', 'reception_complete'] %}bg-light{% endif %}">
+                <div class="card-header {% if project.status.value in ['poc_in_progress', 'delayed'] or project.status.value == 'reception_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'submission_complete')|list|length > 0 %}bg-primary text-white{% endif %}">
                     <h5 class="card-title mb-0">3. POC 진행</h5>
                 </div>
                 <div class="card-body">
@@ -140,7 +145,7 @@
                     <p class="small text-muted">시작일: {{ poc_history.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
                     {% endif %}
 
-                    {% if project.status.value == 'poc_in_progress' %}
+                    {% if project.status.value in ['poc_in_progress', 'delayed'] or project.status.value == 'reception_complete' and project.email_history|selectattr('email_type.value', 'equalto', 'submission_complete')|list|length > 0 %}
                     <div class="d-grid gap-2">
                         <button class="btn btn-warning" onclick="showExtendModal()">
                             기간 연장 안내하기
@@ -148,13 +153,10 @@
                         <button class="btn btn-success" onclick="showReportModal()">
                             리포트 업로드 및 완료
                         </button>
-                        <button class="btn btn-danger mt-3" onclick="showCancelModal()">
-                            프로젝트 취소
-                        </button>
                     </div>
                     {% else %}
                     <div class="d-grid gap-2">
-                        <button class="btn btn-secondary" disabled>{% if project.status.value in ['application_complete', 'reception_complete'] %}대기 중{% else %}처리 완료{% endif %}</button>
+                        <button class="btn btn-secondary" disabled>{% if project.status.value in ['application_complete', 'reception_complete'] and project.email_history|selectattr('email_type.value', 'equalto', 'submission_complete')|list|length == 0 %}대기 중{% else %}처리 완료{% endif %}</button>
                     </div>
                     {% endif %}
                 </div>
@@ -228,16 +230,26 @@
                         <tr>
                             <td>{{ email.sent_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
-                                {% if email.email_type.value == 'application-complete' %}
+                                {% if email.email_type %}
+                                    {% if email.email_type.value == 'application_complete' %}
                                     신청 완료 메일
-                                {% elif email.email_type.value == 'submission-complete' %}
-                                    접수 완료 메일
-                                {% elif email.email_type.value == 'cancellation' %}
-                                    취소 안내 메일
-                                {% elif email.email_type.value == 'delay' %}
-                                    기간 연장 메일
-                                {% elif email.email_type.value == 'report' %}
+                                    {% elif email.email_type.value == 'submission_complete' %}
+                                    제출 완료 메일
+                                    {% elif email.email_type.value == 'poc_complete' %}
                                     POC 완료 메일
+                                    {% elif email.email_type.value == 'cancellation' %}
+                                    취소 안내 메일
+                                    {% elif email.email_type.value == 'delay' %}
+                                    지연 안내 메일
+                                    {% elif email.email_type.value == 'misc' %}
+                                    기타 안내 메일
+                                    {% elif email.email_type.value == 'welcome' %}
+                                    신청 완료 메일 (구)
+                                    {% elif email.email_type.value == 'complete' %}
+                                    접수 완료 메일 (구)
+                                    {% elif email.email_type.value == 'report' %}
+                                    POC 완료 메일 (구)
+                                    {% endif %}
                                 {% endif %}
                             </td>
                             <td>{{ email.subject }}</td>
@@ -278,28 +290,32 @@
                             <td>{{ history.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
                                 {% if history.previous_status.value == 'application_complete' %}
-                                    신청 완료
+                                    신청 완료(application_complete)
                                 {% elif history.previous_status.value == 'reception_complete' %}
-                                    접수 완료
+                                    접수 완료(reception_complete)
                                 {% elif history.previous_status.value == 'poc_in_progress' %}
-                                    POC 진행중
+                                    POC 진행중(poc_in_progress)
+                                {% elif history.previous_status.value == 'delayed' %}
+                                    POC 지연(delayed)
                                 {% elif history.previous_status.value == 'poc_complete' %}
-                                    POC 완료
+                                    POC 완료(poc_complete)
                                 {% elif history.previous_status.value == 'cancelled' %}
-                                    취소됨
+                                    취소됨(cancelled)
                                 {% endif %}
                             </td>
                             <td>
                                 {% if history.new_status.value == 'application_complete' %}
-                                    신청 완료
+                                    신청 완료(application_complete)
                                 {% elif history.new_status.value == 'reception_complete' %}
-                                    접수 완료
+                                    접수 완료(reception_complete)
                                 {% elif history.new_status.value == 'poc_in_progress' %}
-                                    POC 진행중
+                                    POC 진행중(poc_in_progress)
+                                {% elif history.new_status.value == 'delayed' %}
+                                    POC 지연(delayed)
                                 {% elif history.new_status.value == 'poc_complete' %}
-                                    POC 완료
+                                    POC 완료(poc_complete)
                                 {% elif history.new_status.value == 'cancelled' %}
-                                    취소됨
+                                    취소됨(cancelled)
                                 {% endif %}
                             </td>
                             <td>{{ history.created_by }}</td>
@@ -318,36 +334,103 @@
 {% include 'modals/extend_modal.html' %}
 {% include 'modals/report_modal.html' %}
 
+<!-- 삭제 모달 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">프로젝트 삭제</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>이 작업은 되돌릴 수 없습니다. 정말로 프로젝트를 삭제하시겠습니까?</p>
+                <div class="mb-3">
+                    <label for="deletePassword" class="form-label">삭제 비밀번호</label>
+                    <input type="password" class="form-control" id="deletePassword" placeholder="비밀번호를 입력하세요">
+                    <div class="form-text text-danger" id="deletePasswordError" style="display: none;">
+                        비밀번호가 일치하지 않습니다.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger" onclick="deleteProject()">삭제</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 리포트 업로드 모달 -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">리포트 업로드</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="reportFile" class="form-label">리포트 파일</label>
+                            <input type="file" class="form-control" id="reportFile" accept=".pdf" required onchange="previewReportEmail()">
+                            <div class="form-text">PDF 파일만 업로드 가능합니다.</div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="reportComment" class="form-label">완료 코멘트 (선택사항)</label>
+                            <textarea class="form-control" id="reportComment" rows="3" onkeyup="previewReportEmail()"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">이메일 프리뷰</h6>
+                            </div>
+                            <div class="card-body" id="reportEmailPreview" style="max-height: 300px; overflow-y: auto;">
+                                <p class="text-muted">리포트 파일을 선택하면 프리뷰가 표시됩니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" onclick="reportProject()">업로드 및 완료</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-async function sendEmail(emailType) {
-    try {
-        if (emailType === 'submission-complete' || emailType === 'application-complete') {
-            window.location.href = `/project/{{ project.id }}/mail/${emailType}`;
-            return;
-        }
-        
-        const response = await fetch(`/project/{{ project.id }}/send-email/${emailType}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert('이메일이 성공적으로 발송되었습니다.');
-            location.reload(); // 페이지 새로고침
-        } else {
-            alert('이메일 발송 실패: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('이메일 발송 중 오류가 발생했습니다.');
+function sendEmail(type) {
+    // Get project ID directly from template variable
+    const projectId = "{{ project.id }}";
+    
+    let emailUrl;
+    // Format email type to match route pattern (using underscores)
+    if (type === 'submission_complete' || type === 'submission-complete') {
+        emailUrl = `/project/${projectId}/mail/submission_complete`;
+    } else if (type === 'application_complete' || type === 'application-complete') {
+        emailUrl = `/project/${projectId}/mail/application_complete`;
+    } else if (type === 'poc_complete' || type === 'poc-complete') {
+        emailUrl = `/project/${projectId}/mail/poc_complete`;
+    } else if (type === 'delay') {
+        emailUrl = `/project/${projectId}/mail/delay`;
+    } else if (type === 'cancellation') {
+        emailUrl = `/project/${projectId}/mail/cancellation`;
+    } else if (type === 'misc') {
+        emailUrl = `/project/${projectId}/mail/misc`;
+    } else if (type === 'report') {
+        emailUrl = `/project/${projectId}/mail/report`;
+    } else {
+        // Default fallback - use type directly
+        emailUrl = `/project/${projectId}/mail/${type}`;
     }
+    
+    window.location.href = emailUrl;
 }
 
 async function updateStatus(status) {
@@ -401,8 +484,348 @@ async function startAnalysis() {
 
 function showCancelModal() {
     // 취소 모달 표시 로직
-    const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
     modal.show();
+}
+
+function showDeleteModal() {
+    // 삭제 모달 표시 로직
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+async function cancelProject() {
+    const password = document.getElementById('cancelPassword').value;
+    const reason = document.getElementById('cancelReason').value;
+    
+    if (password !== '1234') {
+        document.getElementById('cancelPasswordError').style.display = 'block';
+        return;
+    }
+    
+    if (!reason) {
+        alert('취소 사유를 입력해주세요');
+        return;
+    }
+    
+    // 재확인 경고창 추가
+    if (!confirm('정말로 프로젝트를 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        return;
+    }
+    
+    // 버튼 비활성화 및 로딩 표시
+    const cancelButton = document.querySelector('#passwordModal .btn-danger');
+    const originalText = cancelButton.textContent;
+    cancelButton.disabled = true;
+    cancelButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 이메일 발송 중...';
+    
+    try {
+        console.log('취소 요청 시작:', { status: 'cancelled', reason });
+        
+        const response = await fetch(`/project/{{ project.id }}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: 'cancelled',
+                reason: reason
+            })
+        });
+        
+        console.log('취소 요청 응답 상태:', response.status);
+        const data = await response.json();
+        console.log('취소 요청 응답 데이터:', data);
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload(); // 페이지 새로고침
+        } else {
+            alert('프로젝트 취소 실패: ' + data.message);
+            
+            // 버튼 상태 복원
+            cancelButton.disabled = false;
+            cancelButton.textContent = originalText;
+        }
+    } catch (error) {
+        console.error('취소 처리 중 오류 발생:', error);
+        alert('프로젝트 취소 중 오류가 발생했습니다: ' + error.message);
+        
+        // 버튼 상태 복원
+        cancelButton.disabled = false;
+        cancelButton.textContent = originalText;
+    }
+}
+
+async function deleteProject() {
+    const password = document.getElementById('deletePassword').value;
+    
+    if (password !== '1234') {
+        document.getElementById('deletePasswordError').style.display = 'block';
+        return;
+    }
+    
+    // 재확인 경고창 추가
+    if (!confirm('정말로 프로젝트를 삭제하시겠습니까? 이 작업은 절대 되돌릴 수 없으며, 모든 데이터가 영구적으로 삭제됩니다.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/project/{{ project.id }}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('프로젝트가 삭제되었습니다.');
+            window.location.href = '/projects'; // 프로젝트 목록으로 이동
+        } else {
+            alert('프로젝트 삭제 실패: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('프로젝트 삭제 중 오류가 발생했습니다.');
+    }
+}
+
+function showExtendModal() {
+    const modal = new bootstrap.Modal(document.getElementById('extendModal'));
+    modal.show();
+    
+    // 모달이 표시된 후 기본 프리뷰 생성
+    setTimeout(() => {
+        // 날짜 차이 계산
+        calculateDateDifference();
+        
+        // 프리뷰 표시
+        previewExtensionEmail();
+    }, 500);
+}
+
+function showReportModal() {
+    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+    modal.show();
+    // 모달이 표시된 후 기본 프리뷰 생성
+    setTimeout(() => {
+        previewReportEmail();
+    }, 500);
+}
+
+async function previewExtensionEmail() {
+    const newDate = document.getElementById('newDate').value;
+    const reason = document.getElementById('extendReason').value;
+    const previewElement = document.getElementById('extendEmailPreview');
+
+    if (!newDate) {
+        previewElement.innerHTML = '<p class="text-muted">새로운 완료 예정일을 선택해주세요.</p>';
+        return;
+    }
+
+    const formData = {
+        project_id: "{{ project.id }}",
+        company: "{{ project.company }}",
+        name: "{{ project.name }}",
+        current_date: "{{ project.expected_report_date.strftime('%Y-%m-%d') if project.expected_report_date else '미정' }}",
+        new_date: newDate,
+        reason: reason || '(사유 미입력)'
+    };
+
+    try {
+        const response = await fetch('/preview/delay', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            const html = await response.text();
+            previewElement.innerHTML = `
+                <div style="border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
+                    <h6>제목: RTM AI POC 기간 연장 안내</h6>
+                    <hr>
+                    <div class="preview-content">${html}</div>
+                </div>
+            `;
+        } else {
+            previewElement.innerHTML = '<p class="text-danger">프리뷰를 생성하는 중 오류가 발생했습니다.</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        previewElement.innerHTML = '<p class="text-danger">프리뷰를 생성하는 중 오류가 발생했습니다.</p>';
+    }
+}
+
+async function previewReportEmail() {
+    const fileInput = document.getElementById('reportFile');
+    const comment = document.getElementById('reportComment').value;
+    const previewElement = document.getElementById('reportEmailPreview');
+
+    const fileName = fileInput.files && fileInput.files.length > 0 
+        ? fileInput.files[0].name 
+        : null;
+
+    if (!fileName) {
+        previewElement.innerHTML = '<p class="text-muted">리포트 파일을 선택해주세요.</p>';
+        return;
+    }
+
+    const formData = {
+        project_id: "{{ project.id }}",
+        company: "{{ project.company }}",
+        name: "{{ project.name }}",
+        report_name: fileName,
+        comment: comment || '(코멘트 없음)'
+    };
+
+    try {
+        const response = await fetch('/preview/poc_complete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            const html = await response.text();
+            previewElement.innerHTML = `
+                <div style="border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
+                    <h6>제목: RTM AI POC 완료 안내</h6>
+                    <hr>
+                    <div class="preview-content">${html}</div>
+                </div>
+            `;
+        } else {
+            previewElement.innerHTML = '<p class="text-danger">프리뷰를 생성하는 중 오류가 발생했습니다.</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        previewElement.innerHTML = '<p class="text-danger">프리뷰를 생성하는 중 오류가 발생했습니다.</p>';
+    }
+}
+
+async function extendProject() {
+    const newDate = document.getElementById('newDate').value;
+    const reason = document.getElementById('extendReason').value;
+    const dateDifference = document.getElementById('dateDifference').value;
+    
+    if (!newDate) {
+        alert('새로운 완료 예정일을 선택해주세요.');
+        return;
+    }
+    
+    if (!reason) {
+        alert('연장 사유를 입력해주세요.');
+        return;
+    }
+    
+    // 확인 대화상자
+    if (!confirm('기간 연장 이메일을 발송하고 상태를 변경하시겠습니까?')) {
+        return;
+    }
+    
+    // 버튼 비활성화 및 로딩 표시
+    const extendButton = document.querySelector('#extendModal .btn-primary');
+    const originalText = extendButton.textContent;
+    extendButton.disabled = true;
+    extendButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 이메일 발송 중...';
+    
+    try {
+        const response = await fetch(`/project/{{ project.id }}/extend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                new_date: newDate,
+                reason: reason,
+                date_difference: dateDifference
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('기간 연장 실패: ' + data.message);
+            
+            // 버튼 상태 복원
+            extendButton.disabled = false;
+            extendButton.textContent = originalText;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('기간 연장 중 오류가 발생했습니다.');
+        
+        // 버튼 상태 복원
+        extendButton.disabled = false;
+        extendButton.textContent = originalText;
+    }
+}
+
+async function reportProject() {
+    const reportFile = document.getElementById('reportFile');
+    const reportComment = document.getElementById('reportComment').value;
+    
+    if (!reportFile.files || reportFile.files.length === 0) {
+        alert('리포트 파일을 선택해주세요.');
+        return;
+    }
+    
+    if (reportFile.files[0].size > 10 * 1024 * 1024) {
+        alert('파일 크기는 10MB를 초과할 수 없습니다.');
+        return;
+    }
+    
+    // 확인 대화상자
+    if (!confirm('리포트를 업로드하고 완료 이메일을 발송하시겠습니까? 이 작업은 프로젝트를 완료 상태로 변경합니다.')) {
+        return;
+    }
+    
+    // 버튼 비활성화 및 로딩 표시
+    const reportButton = document.querySelector('#reportModal .btn-primary');
+    const originalText = reportButton.textContent;
+    reportButton.disabled = true;
+    reportButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 리포트 업로드 및 이메일 발송 중...';
+    
+    const formData = new FormData();
+    formData.append('report_file', reportFile.files[0]);
+    formData.append('comment', reportComment);
+    
+    try {
+        const response = await fetch(`/project/{{ project.id }}/report/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('리포트 업로드 실패: ' + data.message);
+            
+            // 버튼 상태 복원
+            reportButton.disabled = false;
+            reportButton.textContent = originalText;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('리포트 업로드 중 오류가 발생했습니다.');
+        
+        // 버튼 상태 복원
+        reportButton.disabled = false;
+        reportButton.textContent = originalText;
+    }
 }
 </script>
 {% endblock %} 

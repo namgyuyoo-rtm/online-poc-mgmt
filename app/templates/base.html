@@ -38,14 +38,25 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/projects">프로젝트 관리</a>
+                        <a class="nav-link" href="/"><i class="fas fa-home"></i> 홈</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/email-history">이메일 이력</a>
+                        <a class="nav-link" href="/projects"><i class="fas fa-tasks"></i> 프로젝트 관리</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/email-history"><i class="fas fa-envelope"></i> 이메일 이력</a>
                     </li>
                 </ul>
+                <div class="d-flex">
+                    <a href="{{ url_for('main.application_complete') }}" class="btn btn-outline-light btn-sm me-2">
+                        <i class="fas fa-paper-plane"></i> 신청 완료 메일
+                    </a>
+                    <a href="{{ url_for('main.submission_complete') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-check-circle"></i> 접수 완료 메일
+                    </a>
+                </div>
             </div>
         </div>
     </nav>

@@ -438,32 +438,89 @@
             project_type: document.getElementById('project_type').value,
             project_id: document.getElementById('project_id').value,
             purpose: document.getElementById('purpose').value || '',
-            project_url: document.getElementById('project_url').value || ''
+            project_url: document.getElementById('project_url').value || '',
+            email_type: 'submission_complete'  // 이메일 타입 지정
         };
 
         // 디버깅용 로그
         console.log('Sending data:', formData);
+        
+        // 전송 버튼 비활성화 (중복 클릭 방지)
+        document.getElementById('sendEmailBtn').disabled = true;
+        document.getElementById('sendEmailBtn').innerHTML = '<i class="bi bi-hourglass-split"></i> 이메일 발송 중...';
 
         fetch('/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Source-Page': 'submission-complete'  // 소스 페이지 헤더 추가
             },
             body: JSON.stringify(formData)
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('이메일이 성공적으로 전송되었습니다.');
-                window.location.href = '/projects';
+                // 이메일 발송 로그 생성
+                createEmailLog(formData.project_id, 'submission_complete', '제출 완료 안내', formData.email, 'success')
+                .then(() => {
+                    alert('이메일이 성공적으로 전송되었습니다.');
+                    window.location.href = '/projects';
+                })
+                .catch(error => {
+                    console.error('Error creating email log:', error);
+                    alert('이메일은 전송되었으나 로그 기록 중 오류가 발생했습니다.');
+                    window.location.href = '/projects';
+                });
             } else {
-                alert('이메일 전송 실패: ' + data.message);
+                // 발송 실패 시 로그 기록
+                createEmailLog(formData.project_id, 'submission_complete', '제출 완료 안내', formData.email, 'failed', data.message)
+                .then(() => {
+                    alert('이메일 전송 실패: ' + data.message);
+                    // 버튼 다시 활성화
+                    document.getElementById('sendEmailBtn').disabled = false;
+                    document.getElementById('sendEmailBtn').innerHTML = '<i class="bi bi-envelope"></i> 이메일 발송';
+                })
+                .catch(error => {
+                    console.error('Error creating email log:', error);
+                    alert('이메일 전송 실패: ' + data.message);
+                    // 버튼 다시 활성화
+                    document.getElementById('sendEmailBtn').disabled = false;
+                    document.getElementById('sendEmailBtn').innerHTML = '<i class="bi bi-envelope"></i> 이메일 발송';
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('이메일 전송 중 오류가 발생했습니다.');
+            // 버튼 다시 활성화
+            document.getElementById('sendEmailBtn').disabled = false;
+            document.getElementById('sendEmailBtn').innerHTML = '<i class="bi bi-envelope"></i> 이메일 발송';
         });
+    }
+
+    // 이메일 발송 로그 생성 함수
+    async function createEmailLog(projectId, emailType, subject, recipient, status, errorMessage = '') {
+        try {
+            const response = await fetch('/create-email-log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    project_id: projectId,
+                    email_type: emailType,
+                    subject: subject,
+                    recipient: recipient,
+                    status: status,
+                    error_message: errorMessage
+                })
+            });
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating email log:', error);
+            throw error;
+        }
     }
 
     // 전송 버튼에 이벤트 리스너 추가

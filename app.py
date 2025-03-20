@@ -18,9 +18,21 @@ import json
 import jinja2
 import uuid
 import logging
+import pytz
 
 # Load environment variables
 load_dotenv()
+
+# 한국 시간대 설정
+korea_tz = pytz.timezone('Asia/Seoul')
+
+def get_korea_time():
+    """현재 한국 시간을 반환"""
+    return datetime.now(korea_tz)
+
+def utcnow_to_korea():
+    """DB 기본값으로 사용하기 위한 형태로 한국 시간 반환 (timezone 없는 형태)"""
+    return get_korea_time().replace(tzinfo=None)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -70,8 +82,8 @@ class Project(db.Model):
     purpose = db.Column(db.Text)
     project_url = db.Column(db.String(200), nullable=False)
     status = db.Column(db.Enum(ProjectStatus), default=ProjectStatus.INITIAL_REQUEST)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utcnow_to_korea)
+    updated_at = db.Column(db.DateTime, default=utcnow_to_korea, onupdate=utcnow_to_korea)
 
 class EmailHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -80,7 +92,7 @@ class EmailHistory(db.Model):
     subject = db.Column(db.String(200), nullable=False)
     status = db.Column(db.String(20), nullable=False)  # success, failed
     error_message = db.Column(db.Text)
-    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    sent_at = db.Column(db.DateTime, default=utcnow_to_korea)
     
     project = db.relationship('Project', backref=db.backref('email_history', lazy=True))
 
@@ -102,7 +114,7 @@ def generate_html_preview(data):
         template = Template(f.read())
 
     # Add timestamp
-    data['접수시각'] = datetime.now().strftime('%Y-%m-%d %H:%M')
+    data['접수시각'] = get_korea_time().strftime('%Y-%m-%d %H:%M')
 
     # Render template with data
     html_content = template.render(**data)
@@ -135,7 +147,7 @@ async def send_email(to_email, data):
             template = Template(f.read())
 
         # Add timestamp
-        data['접수시각'] = datetime.now().strftime('%Y-%m-%d %H:%M')
+        data['접수시각'] = get_korea_time().strftime('%Y-%m-%d %H:%M')
 
         # Render template with data
         logger.info("Rendering email template")
@@ -250,7 +262,7 @@ def index():
             '프로젝트ID': form.project_id.data,
             '프로젝트관리페이지': form.project_url.data,
             '과제목적': form.purpose.data,
-            '접수시각': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            '접수시각': get_korea_time().strftime('%Y-%m-%d %H:%M:%S')
         }
         
         # Generate preview
@@ -397,14 +409,16 @@ async def send_completion_report_email():
 
 @app.route('/preview', methods=['POST'])
 def preview_real_time():
-    form_data = request.get_json()
-    form_data['접수시각'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    """Real-time preview generation"""
+    data = request.get_json()
+    # Add timestamp if not provided
+    if '접수시각' not in data:
+        data['접수시각'] = get_korea_time().strftime('%Y-%m-%d %H:%M:%S')
     
-    # 이메일 템플릿 렌더링
-    template_loader = jinja2.FileSystemLoader('templates')
-    template_env = jinja2.Environment(loader=template_loader)
-    template = template_env.get_template('online-poc-email-welcome.html')
-    html_content = template.render(**form_data)
+    # Read template
+    with open('templates/online-poc-email-welcome.html', 'r', encoding='utf-8') as f:
+        template = Template(f.read())
+    html_content = template.render(**data)
     
     return html_content
 

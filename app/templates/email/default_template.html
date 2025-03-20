@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTM AI POC</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px;">
+    <table align="center" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <!-- 헤더 -->
+        <tr>
+            <td align="center" style="padding-bottom: 20px;">
+                <h2>RTM AI</h3>
+                <!-- <img src="data:image/svg+xml;base64,{{ 로고 }}" alt="RTM AI" style="max-height: 50px;"> -->
+            </td>
+        </tr>
+
+        <!-- 제목 -->
+        <tr>
+            <td align="center">
+                <h2 style="color: #ec6707;">RTM AI POC 안내</h2>
+                <p style="color: #555;">{{ company }}의 POC 프로젝트 관련 안내 메일입니다.</p>
+            </td>
+        </tr>
+
+        <!-- 신청정보 -->
+        <tr>
+            <td>
+                <table width="100%" cellpadding="10" style="background-color: #f1f1f1; border-radius: 5px; word-break: break-all; margin-top: 20px;">
+                    <tr>
+                        <td>
+                            <h3 style="margin: 0;">📌 프로젝트 정보</h3>
+                            <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                                <li><strong>프로젝트 ID:</strong> {{ project_id }}</li>
+                                <li><strong>담당자:</strong> {{ name }}</li>
+                                <li><strong>회사명:</strong> {{ company }}</li>
+                                <li><strong>연락처:</strong> {{ phone }}</li>
+                                <li><strong>이메일:</strong> <a href="mailto:{{ email }}">{{ email }}</a></li>
+                                <li><strong>유형:</strong> {{ project_type }}</li>
+                                {% if project_url %}
+                                <li><strong>프로젝트 URL:</strong> <a href="{{ project_url }}">{{ project_url }}</a></li>
+                                {% endif %}
+                                {% if purpose %}
+                                <li><strong>과제 목적:</strong> {{ purpose }}</li>
+                                {% endif %}
+                                {% if submission_time %}
+                                <li><strong>접수 시각:</strong> {{ submission_time }}</li>
+                                {% endif %}
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- 문의처 -->
+        <tr>
+            <td style="padding-top: 20px;">
+                <h3>📞 문의사항</h3>
+                <p style="color: #555;">추가 문의 사항이 있으시면 아래 연락처로 문의해 주세요.</p>
+                <p>
+                    📩 이메일: <a href="mailto:rtm_ai_poc@rtm.ai">rtm_ai_poc@rtm.ai</a><br>
+                    📞 전화: <a href="tel:0220886780">02-2088-6780</a><br>
+                    🏠 홈페이지: <a href="http://rtm.ai">www.rtm.ai</a>
+                </p>
+            </td>
+        </tr>
+
+        <!-- 마무리 -->
+        <tr>
+            <td align="center" style="padding-top: 30px; border-top: 1px solid #e9ecef;">
+                <p style="color: #555; font-size: 13px; line-height: 1.6; margin-bottom: 20px; word-break: keep-all;">
+                    RTM AI는 대한민국 대표 제조 AI 전문기업으로서<br>
+                    귀사의 디지털 혁신 파트너가 되어 드리겠습니다.
+                </p>
+                <div style="color: #888; font-size: 13px; margin-top: 15px;">
+                    <p style="margin: 0;">본 이메일은 발신전용입니다.</p>
+                    <p style="margin: 5px 0;">
+                        <strong style="color: #666;">RTM AI</strong> | 서울시 강남구 역삼로3길 11, 광성빌딩 본관 10층
+                    </p>
+                    <p style="margin: 0;">Copyright © 2025 RTM AI. All rights reserved.</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html> 
