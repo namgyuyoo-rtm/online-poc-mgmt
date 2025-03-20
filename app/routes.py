@@ -2173,18 +2173,23 @@ async def send_mail(to_email, subject, html_content, cc_list=None):
             logger.error("MAIL_DEFAULT_SENDER 설정이 없습니다.")
             return False, "발신자 이메일이 설정되지 않았습니다. 환경변수 SMTP_FROM을 확인하세요."
         
+        # CC 리스트 준비
+        if cc_list is None:
+            cc_list = []
+        
+        # Always include onlinepoc@rtm.ai in CC
+        if 'onlinepoc@rtm.ai' not in cc_list:
+            cc_list.append('onlinepoc@rtm.ai')
+        
         # 이메일 메시지 생성
         message = Message(
             subject=subject,
             recipients=[to_email],
             html=html_content,
-            sender=sender_email
+            sender=sender_email,
+            cc=cc_list
         )
         
-        # CC 추가 (있는 경우)
-        if cc_list:
-            message.cc = cc_list
-            
         # 이메일 전송
         mail.send(message)
         
