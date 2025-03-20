@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
+from flask_cors import CORS
 from .models import db
 import logging
 import os
@@ -11,6 +12,19 @@ mail = Mail()
 
 def create_app():
     app = Flask(__name__)
+    
+    # CORS 설정
+    CORS(app, resources={
+        r"/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "supports_credentials": True
+        }
+    })
+    
+    # Debug 모드 설정
+    app.config['DEBUG'] = os.environ.get('FLASK_ENV') == 'development'
     
     # 로깅 설정
     logging.basicConfig(level=logging.INFO)

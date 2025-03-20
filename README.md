@@ -79,7 +79,8 @@ flask db upgrade
 
 6. 개발 서버 실행:
 ```bash
-flask run
+flask run --debug
+
 ```
 
 ## 배포
