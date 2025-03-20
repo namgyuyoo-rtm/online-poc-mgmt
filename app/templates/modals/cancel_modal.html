@@ -17,7 +17,18 @@
                 </div>
                 <div class="mb-3">
                     <label for="cancelReason" class="form-label">취소 사유</label>
-                    <textarea class="form-control" id="cancelReason" rows="3" required placeholder="취소 사유를 입력해주세요"></textarea>
+                    <select class="form-select mb-2" id="cancelReasonSelect" onchange="updateCancelReason()">
+                        <option value="">취소 사유를 선택하세요</option>
+                        <option value="사용자 요청으로 인한 POC 취소">사용자 요청으로 인한 POC 취소</option>
+                        <option value="상담 및 안내를 통한 취소처리">상담 및 안내를 통한 취소처리</option>
+                        <option value="프로젝트 일정이 변경되어 현재 시점에 진행이 어려움">프로젝트 일정이 변경되어 현재 시점에 진행이 어려움</option>
+                        <option value="적합하지 않은 데이터">제출한 데이터가 적합하지 않음</option>
+                        <option value="기술적 요구사항이 변경되어 현재 POC가 적합하지 않음">기술적 요구사항이 변경되어 현재 POC가 적합하지 않음</option>
+                        <option value="스팸/광고성 이메일로 인한 신청 취소">스팸/광고성 신청으로 인한 신청 취소</option>
+                        <option value="원치 않는 마케팅 연락으로 인한 신청 취소">원치 않는 마케팅 연락으로 인한 신청 취소</option>
+                        <option value="기타 사유">기타 사유(직접 입력)</option>
+                    </select>
+                    <textarea class="form-control" id="cancelReason" rows="3" required placeholder="취소 사유를 자세히 입력해주세요"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -26,4 +37,17 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+function updateCancelReason() {
+    const select = document.getElementById('cancelReasonSelect');
+    const textarea = document.getElementById('cancelReason');
+    if (select.value === '기타 사유') {
+        textarea.value = '';
+        textarea.focus();
+    } else {
+        textarea.value = select.value;
+    }
+}
+</script> 
