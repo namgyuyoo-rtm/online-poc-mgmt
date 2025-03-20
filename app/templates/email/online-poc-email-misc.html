@@ -1,110 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RTM AI POC 안내</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo {
-            max-width: 200px;
-            height: auto;
-        }
-        .content {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 5px;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #666;
-        }
-        .button {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>RTM AI POC 안내</h2>
-        </div>
-        <div class="content">
-            <p>안녕하세요, {{ name }}님.</p>
-            <p>RTM AI POC 과제와 관련하여 안내드립니다.</p>
-            
-            <h3>프로젝트 정보</h3>
-            <table>
-                <tr>
-                    <th>항목</th>
-                    <th>내용</th>
-                </tr>
-                <tr>
-                    <td>프로젝트 ID</td>
-                    <td>{{ project_id }}</td>
-                </tr>
-                <tr>
-                    <td>신청자</td>
-                    <td>{{ name }} ({{ company }})</td>
-                </tr>
-                <tr>
-                    <td>접수 시각</td>
-                    <td>{{ 접수시각 }}</td>
-                </tr>
-                <tr>
-                    <td>POC 유형</td>
-                    <td>{{ project_type }}</td>
-                </tr>
-            </table>
-            
-            <p>프로젝트 관리 페이지에서 자세한 사항을 확인하실 수 있습니다.</p>
-            <p><a href="{{ 프로젝트관리페이지 }}" class="button">프로젝트 관리 페이지 이동</a></p>
-            
-            <p>추가 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.</p>
-            <p>감사합니다.</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2025 RTM Inc. All rights reserved.</p>
-            <p>이 이메일은 자동으로 발송되었습니다.</p>
-        </div>
-    </div>
+<body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px;">
+    <table align="center" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <!-- 헤더 -->
+        <tr>
+            <td align="center" style="padding-bottom: 20px;">
+                <h2>RTM AI</h2>
+            </td>
+        </tr>
+
+        <!-- 제목 -->
+        <tr>
+            <td align="center">
+                <h2 style="color: #ec6707;">📢 POC 안내</h2>
+                <p style="color: #555;">RTM AI POC 과제와 관련하여 안내드립니다.</p>
+            </td>
+        </tr>
+
+        <!-- 관리페이지 링크 -->
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <a href="{{ 프로젝트관리페이지 }}" target="_blank" style="background-color: #ec6707; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">
+                    프로젝트 관리 페이지 바로가기 🔗
+                </a>
+            </td>
+        </tr>
+
+        <!-- 프로젝트 정보 -->
+        <tr>
+            <td>
+                <table width="100%" cellpadding="10" style="background-color: #f1f1f1; border-radius: 5px; word-break: break-all;">
+                    <tr>
+                        <td>
+                            <h3 style="margin: 0;">📌 프로젝트 정보</h3>
+                            <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                                <li><strong>프로젝트 ID:</strong> {{ project_id }}</li>
+                                <li><strong>신청자:</strong> {{ name }} ({{ company }})</li>
+                                <li><strong>접수 시각:</strong> {{ 접수시각 }}</li>
+                                <li><strong>POC 유형:</strong> {{ project_type }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- 문의처 -->
+        <tr>
+            <td style="padding-top: 20px;">
+                <h3>📞 문의사항</h3>
+                <p style="color: #555;">추가 문의 사항이 있으시면 아래 연락처로 문의해 주세요.</p>
+                <p>
+                    📩 이메일: <a href="mailto:onlinepoc@rtm.ai">onlinepoc@rtm.ai</a><br>
+                    📞 전화: <a href="tel:0220886780">02-2088-6780</a><br>
+                    🏠 홈페이지: <a href="http://rtm.ai?utm_source=email&utm_medium=email&utm_campaign=250319_email_onlicepoc_welcome">www.rtm.ai</a>
+                </p>
+            </td>
+        </tr>
+
+        <!-- 마무리 -->
+        <tr>
+            <td align="center" style="padding-top: 30px; border-top: 1px solid #e9ecef;">
+                <p style="color: #555; font-size: 13px; line-height: 1.6; margin-bottom: 20px; word-break: keep-all;">
+                    RTM AI는 대한민국 대표 제조 AI 전문기업으로서<br>
+                    귀사의 디지털 혁신 파트너가 되어 드리겠습니다.
+                </p>
+                <div style="color: #888; font-size: 13px; margin-top: 15px;">
+                    <p style="margin: 0;">본 이메일은 발신전용입니다.</p>
+                    <p style="margin: 5px 0;">
+                        <strong style="color: #666;">RTM AI</strong> | 서울시 강남구 역삼로3길 11, 광성빌딩 본관 10층
+                    </p>
+                    <p style="margin: 0;">Copyright © 2025 RTM AI. All rights reserved.</p>
+                </div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
