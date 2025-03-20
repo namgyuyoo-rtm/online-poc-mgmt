@@ -2139,7 +2139,7 @@ def prepare_email_content(project, email_type, additional_data=None):
                         <p>안녕하세요, {project.name}님,</p>
                         <p>{project.company}의 RTM AI POC 프로젝트 ({project.project_type}) 정보입니다.</p>
                         <p>프로젝트 ID: {project.id}</p>
-                        <p>문의사항이 있으시면 rtm_ai_poc@rtm.ai로 연락해주세요.</p>
+                        <p>문의사항이 있으시면 onlinepoc@rtm.ai로 연락해주세요.</p>
                         <div class="footer">
                             <p>본 메일은 자동 발송되었습니다.</p>
                             <p>&copy; RTM AI</p>

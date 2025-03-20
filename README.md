@@ -18,7 +18,7 @@ RTM AI POC 관리 시스템은 AI POC(Proof of Concept) 프로젝트의 생명�
 - **접수 완료(RECEPTION_COMPLETE)**: 프로젝트가 검토되고 접수된 상태
 - **POC 진행 중(POC_IN_PROGRESS)**: POC가 진행 중인 상태
 - **POC 지연(DELAYED)**: 예상 완료일을 초과하여 지연된 상태
-- **POC 완료(POC_COMPLETE)**: POC가 완료되고 보고서가 제출된 상태
+- **POC 완료(POC_COMPLETE)**: POC가 완료되고 보고서가 제출된 상태(아직 안함)
 - **취소됨(CANCELLED)**: 프로젝트가 취소된 상태
 
 ## 이메일 유형
@@ -30,13 +30,13 @@ RTM AI POC 관리 시스템은 AI POC(Proof of Concept) 프로젝트의 생명�
 - **POC 완료(POC_COMPLETE)**: POC 완료 및 결과 보고서 제공
 - **지연(DELAY)**: POC 일정 지연 안내
 - **취소(CANCELLATION)**: POC 취소 안내
-- **기타(MISC)**: 기타 필요한 커뮤니케이션
+- **기타(MISC)**: 기타 필요한 커뮤니케이션(아직안함)
 
 ## 기술 스택
 
 - **백엔드**: Flask (Python)
 - **프론트엔드**: HTML, CSS, JavaScript, Bootstrap
-- **데이터베이스**: SQLite (개발), PostgreSQL (프로덕션)
+- **데이터베이스**: SQLite (개발), PostgreSQL (프로덕션은 준비안함)
 - **이메일 서비스**: Gmail SMTP
 
 ## 설치 및 실행
@@ -50,8 +50,8 @@ RTM AI POC 관리 시스템은 AI POC(Proof of Concept) 프로젝트의 생명�
 
 1. 저장소 클론:
 ```bash
-git clone https://github.com/yourusername/rtm-ai-poc-mgmt.git
-cd rtm-ai-poc-mgmt
+git https://github.com/namgyuyoo-rtm/online-poc-mgmt.git
+cd online-poc-mgmt
 ```
 
 2. 가상 환경 생성 및 활성화:
