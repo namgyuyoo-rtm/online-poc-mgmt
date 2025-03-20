@@ -30,7 +30,7 @@ RTM AI POC 관리 시스템은 AI POC(Proof of Concept) 프로젝트의 생명�
 - **POC 완료(POC_COMPLETE)**: POC 완료 및 결과 보고서 제공
 - **지연(DELAY)**: POC 일정 지연 안내
 - **취소(CANCELLATION)**: POC 취소 안내
-- **기타(MISC)**: 기타 필요한 커뮤니케이션(아직안함)
+- **기타(MISC)**: 기타 필요한 커뮤니케이션
 
 ## 기술 스택
 
