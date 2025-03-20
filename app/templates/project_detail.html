@@ -60,6 +60,9 @@
             <!-- 취소 및 삭제 버튼 -->
             <div class="row mt-3">
                 <div class="col-12">
+                    <button class="btn btn-primary me-2" onclick="showMemoMailModal()">
+                        메모 메일 보내기
+                    </button>
                     {% if project.status.value != 'cancelled' and project.status.value != 'poc_complete' %}
                     <button class="btn btn-danger me-2" onclick="showCancelModal()">
                         프로젝트 취소
@@ -333,6 +336,52 @@
 {% include 'modals/cancel_modal.html' %}
 {% include 'modals/extend_modal.html' %}
 {% include 'modals/report_modal.html' %}
+
+<!-- 메모 메일 모달 -->
+<div class="modal fade" id="memoMailModal" tabindex="-1" aria-labelledby="memoMailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="memoMailModalLabel">메모 메일 발송</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="memoSubject" class="form-label">이메일 제목 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="memoSubject" required placeholder="이메일 제목을 입력하세요">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="memoContent" class="form-label">이메일 내용 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="memoContent" rows="10" required placeholder="이메일 내용을 입력하세요"></textarea>
+                            <small class="text-muted">HTML 태그를 사용할 수 있습니다. 예: &lt;strong&gt;진하게&lt;/strong&gt;, &lt;br&gt;(줄바꿈)</small>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="memoAttachment" class="form-label">첨부 파일 (선택사항)</label>
+                            <input type="file" class="form-control" id="memoAttachment">
+                            <small class="text-muted">최대 10MB, 허용 형식: PDF, DOCX, XLSX, PPTX, PNG, JPG</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">이메일 프리뷰</h6>
+                            </div>
+                            <div class="card-body" id="memoEmailPreview" style="max-height: 500px; overflow-y: auto;">
+                                <p class="text-muted">이메일 내용을 입력하면 프리뷰가 표시됩니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" onclick="sendMemoMail()">이메일 발송</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- 삭제 모달 -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -825,6 +874,120 @@ async function reportProject() {
         // 버튼 상태 복원
         reportButton.disabled = false;
         reportButton.textContent = originalText;
+    }
+}
+
+function showMemoMailModal() {
+    const modal = new bootstrap.Modal(document.getElementById('memoMailModal'));
+    modal.show();
+    
+    // 초기값 설정
+    document.getElementById('memoSubject').value = "RTM AI POC 안내";
+    document.getElementById('memoContent').value = "";
+    document.getElementById('memoAttachment').value = "";
+    
+    // 이벤트 리스너 추가
+    document.getElementById('memoSubject').addEventListener('input', updateMemoPreview);
+    document.getElementById('memoContent').addEventListener('input', updateMemoPreview);
+    document.getElementById('memoAttachment').addEventListener('change', updateMemoPreview);
+}
+
+async function updateMemoPreview() {
+    const subject = document.getElementById('memoSubject').value;
+    const content = document.getElementById('memoContent').value;
+    const previewElement = document.getElementById('memoEmailPreview');
+    
+    if (!subject || !content) {
+        previewElement.innerHTML = '<p class="text-muted">이메일 제목과 내용을 입력해주세요.</p>';
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('name', "{{ project.name }}");
+    formData.append('company', "{{ project.company }}");
+    formData.append('email', "{{ project.email }}");
+    formData.append('phone', "{{ project.phone }}");
+    formData.append('project_type', "{{ project.project_type }}");
+    formData.append('project_id', "{{ project.id }}");
+    formData.append('project_url', "{{ project.project_url }}");
+    formData.append('email_subject', subject);
+    formData.append('email_content', content);
+    
+    const fileInput = document.getElementById('memoAttachment');
+    if (fileInput.files.length > 0) {
+        formData.append('attachment', fileInput.files[0]);
+    }
+    
+    try {
+        const response = await fetch('/preview/misc', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const html = await response.text();
+            previewElement.innerHTML = `
+                <div style="border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
+                    <h6>제목: ${subject}</h6>
+                    <hr>
+                    <div class="preview-content">${html}</div>
+                </div>
+            `;
+        } else {
+            previewElement.innerHTML = '<p class="text-danger">프리뷰를 생성하는 중 오류가 발생했습니다.</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        previewElement.innerHTML = '<p class="text-danger">프리뷰를 생성하는 중 오류가 발생했습니다.</p>';
+    }
+}
+
+async function sendMemoMail() {
+    const subject = document.getElementById('memoSubject').value;
+    const content = document.getElementById('memoContent').value;
+    const fileInput = document.getElementById('memoAttachment');
+    
+    if (!subject || !content) {
+        alert('이메일 제목과 내용을 입력해주세요.');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('name', "{{ project.name }}");
+    formData.append('company', "{{ project.company }}");
+    formData.append('email', "{{ project.email }}");
+    formData.append('phone', "{{ project.phone }}");
+    formData.append('project_type', "{{ project.project_type }}");
+    formData.append('project_id', "{{ project.id }}");
+    formData.append('project_url', "{{ project.project_url }}");
+    formData.append('email_subject', subject);
+    formData.append('email_content', content);
+    formData.append('email_type', 'misc');
+    
+    if (fileInput.files.length > 0) {
+        formData.append('attachment', fileInput.files[0]);
+    }
+    
+    try {
+        const response = await fetch('/send-with-file', {
+            method: 'POST',
+            headers: {
+                'X-Source-Page': 'misc'
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('이메일이 성공적으로 전송되었습니다.');
+            location.reload();
+        } else {
+            alert('이메일 전송 실패: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('이메일 전송 중 오류가 발생했습니다.');
     }
 }
 </script>

@@ -1530,7 +1530,7 @@ def preview_misc():
             data = request.get_json() or {}
         
         html = render_template(
-            'email_templates/misc.html',
+            'email/online-poc-email-misc.html',
             name=data.get('name', ''),
             company=data.get('company', ''),
             project_type=data.get('project_type', ''),
