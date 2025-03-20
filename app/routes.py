@@ -26,31 +26,31 @@ EMAIL_CONFIG = {
     EmailType.APPLICATION_COMPLETE: {
         'template': 'email/online-poc-email-welcome.html',
         'subject': 'RTM AI POC 신청 완료 안내',
-        'page_template': 'mail/application-complete.html',
+        'page_template': 'application_complete.html',
         'status': ProjectStatus.APPLICATION_COMPLETE
     },
     EmailType.SUBMISSION_COMPLETE: {
         'template': 'email/online-poc-email-complete.html',
         'subject': 'RTM AI POC 제출 완료 안내',
-        'page_template': 'mail/submission-complete.html',
+        'page_template': 'submission_complete.html',
         'status': ProjectStatus.RECEPTION_COMPLETE
     },
     EmailType.CANCELLATION: {
         'template': 'email/online-poc-email-cancel.html',
         'subject': 'RTM AI POC 취소 안내',
-        'page_template': 'mail/cancel_mail.html',
+        'page_template': 'email_history.html', # 임시로 존재하는 템플릿으로 대체
         'status': ProjectStatus.CANCELLED
     },
     EmailType.DELAY: {
         'template': 'email/online-poc-email-delay.html',
         'subject': 'RTM AI POC 기간 연장 안내',
-        'page_template': 'mail/extend_mail.html',
+        'page_template': 'application_complete.html', # 임시로 존재하는 템플릿으로 대체
         'status': ProjectStatus.POC_IN_PROGRESS
     },
     EmailType.REPORT: {
         'template': 'email/online-poc-email-complete.html',
         'subject': 'RTM AI POC 완료 안내',
-        'page_template': 'mail/complete_mail.html',
+        'page_template': 'submission_complete.html', # 임시로 존재하는 템플릿으로 대체
         'status': ProjectStatus.POC_COMPLETE
     }
 }
@@ -103,14 +103,15 @@ async def send_email(project, email_type, additional_data=None):
         # 템플릿 데이터 준비
         data = {
             '접수시각': project.created_at.strftime('%Y-%m-%d %H:%M'),
-            '이름': project.name,
-            '회사명': project.company,
-            '이메일': project.email,
-            '연락처': project.phone,
-            '유형': project.project_type,
-            '프로젝트ID': project.id,
+            'name': project.name,
+            'company': project.company,
+            'email': project.email,
+            'phone': project.phone,
+            'project_type': project.project_type,
+            'project_id': project.id,
             '프로젝트관리페이지': os.getenv('APP_URL', 'http://localhost:5000') + f'/project/{project.id}',
-            '과제목적': project.purpose
+            'purpose': project.purpose,
+            '로고': LOGO_BASE64
         }
         
         # 추가 데이터가 있으면 병합
@@ -238,7 +239,7 @@ async def submission_complete():
             # 이메일 발송 실패 시 이미 send_email 함수에서 이력을 기록하므로 여기서는 불필요
             return render_template('submission_complete.html', form=form, preview_url=preview_url, error=error)
         
-        return redirect(url_for('main.projects'))
+            return redirect(url_for('main.projects'))
 
     return render_template('submission_complete.html', form=form, preview_url=preview_url)
 
@@ -273,7 +274,7 @@ async def application_complete():
             if not success:
                 return render_template('application_complete.html', form=form, preview_url=preview_url, error=error)
             
-            return redirect(url_for('main.projects'))
+                return redirect(url_for('main.projects'))
 
     return render_template('application_complete.html', form=form, preview_url=preview_url)
 
@@ -363,10 +364,19 @@ async def send():
         db.session.add(new_project)
         db.session.commit()
         
+        # 추가 데이터 준비 (submission_time)
+        additional_data = None
+        if data.get('submission_time'):
+            additional_data = {
+                '접수시각': data['submission_time']
+            }
+            logging.info(f"Using custom submission time: {data['submission_time']}")
+        
         # 이메일 전송
         success, error_msg = await send_email(
             project=new_project,
-            email_type=EmailType.APPLICATION_COMPLETE
+            email_type=EmailType.APPLICATION_COMPLETE,
+            additional_data=additional_data
         )
         
         if success:
@@ -452,9 +462,11 @@ def project_actions(project_id):
         'description': action.description
     } for action in actions])
 
-@bp.route('/project/<project_id>/send-email/<email_type>', methods=['POST'])
+@bp.route('/project/<uuid:project_id>/send-email/<email_type>', methods=['POST'])
 async def send_email_api(project_id, email_type):
-    """이메일 발송 API 엔드포인트"""
+    """
+    이메일을 발송합니다.
+    """
     try:
         project = Project.query.get_or_404(project_id)
         request_data = request.get_json() or {}
@@ -483,7 +495,7 @@ async def send_email_api(project_id, email_type):
                     db.session.add(status_history)
                     db.session.commit()
                     logger.info(f"프로젝트 {project_id} 상태가 RECEPTION_COMPLETE로 업데이트되었습니다.")
-            
+
             # 이메일 발송
             success, error_msg = await send_email(project, email_type_obj)
             
@@ -515,7 +527,7 @@ async def send_email_api(project_id, email_type):
                 'message': '잘못된 이메일 타입입니다.',
                 'type': 'invalid_email_type'
             }), 400
-    
+
     except Exception as e:
         logger.error(f"이메일 발송 중 오류: {str(e)}")
         return jsonify({
@@ -524,13 +536,15 @@ async def send_email_api(project_id, email_type):
             'type': 'server_error'
         }), 500
 
-@bp.route('/project/<project_id>/mail/<email_type>')
+@bp.route('/project/<uuid:project_id>/send-email/<email_type>', methods=['GET', 'POST'])
 def send_email_page(project_id, email_type):
-    """이메일 발송 페이지 라우트"""
+    """
+    이메일 발송 페이지를 표시합니다.
+    """
+    form = EmailForm()
+    project = Project.query.get_or_404(project_id)
+    
     try:
-        project = Project.query.get_or_404(project_id)
-        form = EmailForm(obj=project)
-        
         # Convert hyphenated URL format to enum format
         email_type_enum = email_type.upper().replace('-', '_')
         
@@ -557,8 +571,9 @@ def send_email_page(project_id, email_type):
             abort(400, f"Invalid email type: {email_type}")
         
     except Exception as e:
-        logger.error(f"이메일 발송 페이지 로드 중 오류: {str(e)}")
-        abort(500, str(e))
+        logger.error(f"이메일 페이지 로드 중 오류: {str(e)}")
+        flash(f'이메일 페이지 로드 중 오류가 발생했습니다: {str(e)}', 'danger')
+        return redirect(url_for('main.project_detail', project_id=project_id))
 
 @bp.route('/project/<project_id>/mail/submission-complete')
 def send_submission_complete_mail_page(project_id):
@@ -570,7 +585,7 @@ def send_submission_complete_mail_page(project_id):
     
     return render_template(
         EMAIL_CONFIG[email_type]['page_template'],
-        form=form, 
+        form=form,
         project=project,
         email_type=email_type,
         preview_url=preview_url
@@ -747,7 +762,7 @@ def validate_project_status(project_id):
         # 요청에서 예상하는 상태 가져오기
         data = request.get_json() or {}
         expected_status = data.get('expected_status')
-        
+            
         # 프로젝트 상태 검증
         is_valid = True
         message = "상태가 유효합니다."
@@ -781,7 +796,7 @@ def validate_project_status(project_id):
             'message': message,
             'project': project_info
         })
-        
+
     except Exception as e:
         logger.error(f"프로젝트 상태 검증 중 오류: {str(e)}")
         return jsonify({

@@ -15,20 +15,28 @@
                     <div id="pasteArea" contenteditable="true" class="form-control">여기에 텍스트를 붙여넣으세요</div>
                 </div>
 
+                <div id="validationSummary" class="alert alert-danger d-none">
+                    <strong>입력 오류:</strong> 모든 필수 입력란을 올바르게 작성해주세요.
+                </div>
+
                 <form method="POST" id="pocForm">
                     {{ form.csrf_token }}
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="name" class="form-label">이름</label>
-                            {{ form.name(class="form-control", id="name") }}
+                            <label for="submission_time" class="form-label">접수 시각 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="submission_time" required placeholder="접수 시각">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">이름 <span class="text-danger">*</span></label>
+                            {{ form.name(class="form-control", id="name", placeholder="이름") }}
                             {% if form.name.errors %}
                                 <div class="text-danger">{{ form.name.errors[0] }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label for="company" class="form-label">회사명</label>
-                            {{ form.company(class="form-control", id="company") }}
+                            <label for="company" class="form-label">회사명 <span class="text-danger">*</span></label>
+                            {{ form.company(class="form-control", id="company", placeholder="회사명") }}
                             {% if form.company.errors %}
                                 <div class="text-danger">{{ form.company.errors[0] }}</div>
                             {% endif %}
@@ -37,15 +45,15 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="email" class="form-label">이메일</label>
-                            {{ form.email(class="form-control", id="email") }}
+                            <label for="email" class="form-label">이메일 <span class="text-danger">*</span></label>
+                            {{ form.email(class="form-control", id="email", placeholder="이메일 주소") }}
                             {% if form.email.errors %}
                                 <div class="text-danger">{{ form.email.errors[0] }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label for="phone" class="form-label">연락처</label>
-                            {{ form.phone(class="form-control", id="phone") }}
+                            <label for="phone" class="form-label">연락처 <span class="text-danger">*</span></label>
+                            {{ form.phone(class="form-control", id="phone", placeholder="010-1234-5678") }}
                             {% if form.phone.errors %}
                                 <div class="text-danger">{{ form.phone.errors[0] }}</div>
                             {% endif %}
@@ -54,21 +62,21 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="project_type" class="form-label">프로젝트 유형</label>
-                            {{ form.project_type(class="form-control", id="project_type") }}
+                            <label for="project_type" class="form-label">프로젝트 유형 <span class="text-danger">*</span></label>
+                            {{ form.project_type(class="form-control", id="project_type", placeholder="프로젝트 유형") }}
                             {% if form.project_type.errors %}
                                 <div class="text-danger">{{ form.project_type.errors[0] }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label for="project_id" class="form-label">프로젝트 ID</label>
-                            <input type="text" class="form-control" id="project_id" required>
+                            <label for="project_id" class="form-label">프로젝트 ID <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="project_id" required placeholder="프로젝트 ID">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="project_url" class="form-label">프로젝트 URL</label>
-                        {{ form.project_url(class="form-control", id="project_url") }}
+                        <label for="project_url" class="form-label">프로젝트 URL <span class="text-danger">*</span></label>
+                        {{ form.project_url(class="form-control", id="project_url", placeholder="https://example.com/project") }}
                         {% if form.project_url.errors %}
                             <div class="text-danger">{{ form.project_url.errors[0] }}</div>
                         {% endif %}
@@ -77,7 +85,7 @@
                     <div class="mb-3">
                         <label for="purpose" class="form-label">과제 목적</label>
                         <div class="input-group">
-                            {{ form.purpose(class="form-control", rows=3, id="purpose") }}
+                            {{ form.purpose(class="form-control", rows=3, id="purpose", placeholder="과제의 목적을 입력하세요 (선택사항)") }}
                             <button type="button" class="btn btn-outline-secondary" onclick="clearPurpose()">초기화</button>
                         </div>
                         <small class="text-muted">과제 목적은 선택사항입니다</small>
@@ -87,7 +95,7 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        {{ form.submit(class="btn btn-primary") }}
+                        {{ form.submit(class="btn btn-primary", onclick="return validateForm();") }}
                     </div>
                 </form>
             </div>
@@ -98,9 +106,12 @@
             <div class="preview-container">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h3 class="mb-0">이메일 미리보기</h3>
-                    <button class="btn btn-primary" onclick="sendEmail()">
-                        <i class="bi bi-envelope"></i> 이메일 발송
-                    </button>
+                    <div>
+                        <div id="validationStatus" class="badge bg-warning mb-2 d-none">유효성 검사 필요</div>
+                        <button class="btn btn-primary" onclick="sendEmail()" id="sendEmailBtn" disabled>
+                            <i class="bi bi-envelope"></i> 이메일 발송
+                        </button>
+                    </div>
                 </div>
                 <iframe id="previewFrame" class="preview-frame" src="{{ preview_url if preview_url else 'about:blank' }}"></iframe>
             </div>
@@ -167,8 +178,145 @@
 
 {% block scripts %}
 <script>
+    // Helper function to add leading zero to single digit numbers
+    function padZero(num) {
+        return num < 10 ? '0' + num : num;
+    }
+
+    // Function to validate form and enable/disable send button
+    function validateForm() {
+        const requiredFields = [
+            'submission_time',
+            'name',
+            'company',
+            'email',
+            'phone',
+            'project_type',
+            'project_id',
+            'project_url'
+        ];
+        
+        let isValid = true;
+        let errorCount = 0;
+        const validationErrors = [];
+        
+        // Check if all required fields have values
+        for (const field of requiredFields) {
+            const element = document.getElementById(field);
+            if (!element || !element.value.trim()) {
+                isValid = false;
+                element.classList.add('is-invalid');
+                errorCount++;
+                validationErrors.push(`${element.getAttribute('placeholder') || field} 필드가 비어 있습니다.`);
+            } else {
+                element.classList.remove('is-invalid');
+            }
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailElement = document.getElementById('email');
+        if (emailElement && emailElement.value) {
+            if (!emailRegex.test(emailElement.value)) {
+                isValid = false;
+                emailElement.classList.add('is-invalid');
+                errorCount++;
+                validationErrors.push('이메일 형식이 올바르지 않습니다.');
+            } else {
+                emailElement.classList.remove('is-invalid');
+            }
+        }
+        
+        // Validate phone number format (simple Korean format check)
+        const phoneElement = document.getElementById('phone');
+        if (phoneElement && phoneElement.value) {
+            // Accept formats like 010-1234-5678 or 01012345678
+            const phoneRegex = /^(01[016789][-\s]?[0-9]{3,4}[-\s]?[0-9]{4})$/;
+            if (!phoneRegex.test(phoneElement.value)) {
+                isValid = false;
+                phoneElement.classList.add('is-invalid');
+                errorCount++;
+                validationErrors.push('전화번호 형식이 올바르지 않습니다. (예: 010-1234-5678)');
+            } else {
+                phoneElement.classList.remove('is-invalid');
+            }
+        }
+        
+        // Validate project ID (UUID format)
+        const projectIdElement = document.getElementById('project_id');
+        if (projectIdElement && projectIdElement.value) {
+            // Simple UUID format validation
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            // Allow both UUID format and simple alphanumeric format
+            if (!uuidRegex.test(projectIdElement.value) && !/^[a-z0-9-_]{4,}$/i.test(projectIdElement.value)) {
+                isValid = false;
+                projectIdElement.classList.add('is-invalid');
+                errorCount++;
+                validationErrors.push('프로젝트 ID 형식이 올바르지 않습니다.');
+            } else {
+                projectIdElement.classList.remove('is-invalid');
+            }
+        }
+        
+        // Check if project URL is a valid URL
+        const urlElement = document.getElementById('project_url');
+        if (urlElement && urlElement.value) {
+            try {
+                new URL(urlElement.value);
+                urlElement.classList.remove('is-invalid');
+            } catch (e) {
+                isValid = false;
+                urlElement.classList.add('is-invalid');
+                errorCount++;
+                validationErrors.push('프로젝트 URL 형식이 올바르지 않습니다.');
+            }
+        }
+        
+        // Show/hide validation summary
+        const validationSummary = document.getElementById('validationSummary');
+        const validationStatus = document.getElementById('validationStatus');
+        
+        if (errorCount > 0) {
+            validationSummary.classList.remove('d-none');
+            validationSummary.innerHTML = `<strong>입력 오류 (${errorCount}개):</strong> <ul class="mb-0 mt-1 ps-3">${validationErrors.map(err => `<li>${err}</li>`).join('')}</ul>`;
+            
+            validationStatus.classList.remove('d-none');
+            validationStatus.classList.remove('bg-success');
+            validationStatus.classList.add('bg-warning');
+            validationStatus.textContent = `유효성 검사 실패 (${errorCount}개 오류)`;
+        } else {
+            validationSummary.classList.add('d-none');
+            
+            validationStatus.classList.remove('d-none');
+            validationStatus.classList.remove('bg-warning');
+            validationStatus.classList.add('bg-success');
+            validationStatus.textContent = '유효성 검사 통과';
+        }
+        
+        // Enable or disable the send button
+        document.getElementById('sendEmailBtn').disabled = !isValid;
+        
+        return isValid;
+    }
+
+    // Set the initial Korean formatted date when the page loads
+    window.addEventListener('DOMContentLoaded', (event) => {
+        const now = new Date();
+        const koreanTimeString = `${now.getFullYear()}년 ${padZero(now.getMonth() + 1)}월 ${padZero(now.getDate())}일 ${padZero(now.getHours())}시 ${padZero(now.getMinutes())}분`;
+        document.getElementById('submission_time').value = koreanTimeString;
+        updatePreview();
+        validateForm(); // Check form validity on load
+    });
+
     // 폼 데이터가 변경될 때마다 미리보기 업데이트
     function updatePreview() {
+        // Validate form before updating preview
+        validateForm();
+        
+        // Get current time in Korean format for preview if needed
+        const now = new Date();
+        const koreanTimeString = `${now.getFullYear()}년 ${padZero(now.getMonth() + 1)}월 ${padZero(now.getDate())}일 ${padZero(now.getHours())}시 ${padZero(now.getMinutes())}분`;
+        
         const formData = {
             'name': document.getElementById('name').value,
             'company': document.getElementById('company').value,
@@ -178,7 +326,7 @@
             'project_id': document.getElementById('project_id').value,
             'project_url': document.getElementById('project_url').value,
             'purpose': document.getElementById('purpose').value,
-            '접수시각': new Date().toISOString()
+            'submission_time': document.getElementById('submission_time').value || koreanTimeString
         };
 
         fetch('/preview/application-complete', {
@@ -195,15 +343,26 @@
             doc.open();
             doc.write(html);
             doc.close();
+            
+            // Validate form after preview is updated
+            validateForm();
+        })
+        .catch(error => {
+            console.error('미리보기 생성 중 오류:', error);
+            alert('미리보기를 생성하는 중 오류가 발생했습니다.');
         });
     }
 
     // 폼 필드 변경 감지
-    document.getElementById('pocForm').addEventListener('input', updatePreview);
+    document.getElementById('pocForm').addEventListener('input', function() {
+        updatePreview();
+        validateForm();
+    });
 
     function clearPurpose() {
         document.getElementById('purpose').value = '';
         updatePreview();
+        validateForm();
     }
 
     // 붙여넣기 영역 변경 감지
@@ -218,6 +377,32 @@
         };
 
         // Fill form fields
+        const rawSubmissionTime = extractValue(text, '접수시각');
+        
+        // Format submission time to Korean readable format
+        let formattedTime = rawSubmissionTime;
+        
+        try {
+            // Try to parse the date string
+            const date = new Date(rawSubmissionTime);
+            
+            // Check if date is valid
+            if (!isNaN(date.getTime())) {
+                // Format date in Korean style (YYYY년 MM월 DD일 HH시 MM분)
+                const year = date.getFullYear();
+                const month = padZero(date.getMonth() + 1);
+                const day = padZero(date.getDate());
+                const hours = padZero(date.getHours());
+                const minutes = padZero(date.getMinutes());
+                
+                formattedTime = `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+            }
+        } catch (err) {
+            console.error('Date parsing error:', err);
+            // Keep the original format if parsing fails
+        }
+        
+        document.getElementById('submission_time').value = formattedTime;
         document.getElementById('name').value = extractValue(text, '이름');
         document.getElementById('company').value = extractValue(text, '회사명');
         document.getElementById('email').value = extractValue(text, '이메일');
@@ -235,11 +420,19 @@
         
         // 미리보기 업데이트
         updatePreview();
+        validateForm();
     });
 
     function sendEmail() {
+        // Check form validity before sending
+        if (!validateForm()) {
+            alert('모든 필수 입력란을 올바르게 작성해주세요.');
+            return false;
+        }
+        
         // 폼 데이터 수집
         const formData = {
+            submission_time: document.getElementById('submission_time').value,
             name: document.getElementById('name').value,
             company: document.getElementById('company').value,
             email: document.getElementById('email').value,
@@ -247,7 +440,7 @@
             project_type: document.getElementById('project_type').value,
             project_id: document.getElementById('project_id').value,
             purpose: document.getElementById('purpose').value || '',
-            project_url: document.getElementById('project_url').value || ''
+            project_url: document.getElementById('project_url').value || '',
         };
 
         // 디버깅용 로그 추가
@@ -276,9 +469,18 @@
     }
 
     // 전송 버튼에 이벤트 리스너 추가
-    document.querySelector('button[type="submit"]').addEventListener('click', function(e) {
-        e.preventDefault();
-        sendEmail();
+    document.addEventListener('DOMContentLoaded', function() {
+        const submitButton = document.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (validateForm()) {
+                    sendEmail();
+                } else {
+                    alert('모든 필수 입력란을 올바르게 작성해주세요.');
+                }
+            });
+        }
     });
 
     // 실시간 미리보기 기능 (기존 기능 유지)
